@@ -71,6 +71,8 @@ ARG BRANCH
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
 ARG JSCOQ_BRANCH=${BRANCH}
 
+RUN echo "hello from the branch" ${JSCOQ_BRANCH}
+
 WORKDIR /root
 RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}
 

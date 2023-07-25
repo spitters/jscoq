@@ -38,6 +38,7 @@
    backend closer to JSON-RPC libs (@ejgallego, #376)
  - Update to Coq 8.20.0 (@ejgallego, @corwin-of-amber, @herbelin)
  - Bump minimal OCaml version to 4.14.2 (@ejgallego)
+ - Have Docker CI use the PR branch on PR CI (@ejgallego, #321)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
