@@ -23,6 +23,7 @@
  - Bump to yojson 3.0.0, dune 3.16 (@ejgallego, #372)
  - Add `js_of_ocaml` dependency to the rule generating `coq-pkgs`
    (@ejgallego)
+ - Have Docker CI use the PR branch on PR CI (@ejgallego, #321)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
