@@ -4,3 +4,7 @@
 [submodule "vendor/coq-lsp"]
 	path = vendor/coq-lsp
 	url = https://github.com/ejgallego/coq-lsp.git
+[submodule "vendor/coq-waterproof"]
+	path = vendor/coq-waterproof
+	url = https://github.com/impermeable/coq-waterproof.git
+	branch = 8.17

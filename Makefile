@@ -216,7 +216,10 @@ dist-artifact: both
 .PHONY: dist dist-npm dist-tarball
 dist: dist-npm dist-tarball
 
-BUILDOBJ = ${addprefix $(BUILDDIR)/./,jscoq.js coq-pkgs frontend backend dist examples docs}
+BUILDOBJ = ${addprefix $(BUILDDIR)/./, \
+	jscoq.js coq-pkgs frontend backend dist examples docs \
+	node_modules/bootstrap \
+	node_modules/ocaml-wasm node_modules/@ocaml-wasm }
 DISTOBJ = README.md index.html package.json package-lock.json $(BUILDOBJ)
 DISTDIR = _build/dist
 
