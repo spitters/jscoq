@@ -33,6 +33,7 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // Addons
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
+import { CoqMdViewEditor } from './coq-editor-mdview';
 
 /**
  * Coq Document Manager, client-side.
@@ -46,7 +47,7 @@ import { CompanyCoq }  from './addon/company-coq.js';
 export interface ManagerOptions {
     backend: backend,
     content_type: 'plain' | 'markdown',
-    frontend: 'cm5' | 'cm6' | 'pm',
+    frontend: 'cm5' | 'cm6' | 'pm' | 'mdview',
     prelaunch: boolean,
     prelude: boolean,
     debug: boolean,
@@ -173,7 +174,7 @@ class ManagerEditor {
     connect() {
 
         // Setup the Coq editor.
-        const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5 };
+        const eIdx = { 'pm': CoqProseMirror, 'cm6': CoqCodeMirror6, 'cm5': CoqCodeMirror5, 'mdview': CoqMdViewEditor };
         const CoqEditor : ICoqEditorConstructor = eIdx[this.options.frontend];
 
         if (!CoqEditor)
@@ -223,7 +224,7 @@ export class CoqManager {
             content_type: 'markdown',
             prelaunch:  false,
             prelude:    true,
-            debug:      true,
+            debug:      false,
             show:       true,
             replace:    false,
             wrapper_id: 'ide-wrapper',
@@ -825,7 +826,7 @@ export class CoqManager {
 
         case 'editor':
             this.editor.disconnect();
-            this.editor.options.frontend = (this.editor.options.frontend === 'cm5') ? 'cm6' : 'cm5';
+            this.editor.options.frontend = (this.editor.options.frontend === 'cm5') ? 'mdview' : 'cm5';
             this.editor.connect();
             break;
         }
