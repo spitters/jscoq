@@ -109,6 +109,13 @@ let lvl_to_fb = function
   | Log-> Feedback.Info
   | Debug -> Feedback.Debug
 
+let lvl_to_fb = function
+  | Fleche.Io.Level.Error -> Feedback.Error
+  | Warning -> Feedback.Warning
+  | Info -> Feedback.Notice
+  | Log-> Feedback.Info
+  | Debug -> Feedback.Debug
+
 let lsp_cb =
   let perfData ~uri:_ ~version:_ { Fleche.Perf.summary = _; _ } = () in
     (* Format.(eprintf "[perfdata]@\n@[%s@]@\n%!" summary) in *)
