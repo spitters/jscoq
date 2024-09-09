@@ -30,7 +30,7 @@ depends: [
 
   # We build a local, patched Coq, but however it is still a dependency and
   # we could build from the opam-installed setup.
-  # "coq"                 { >= "8.17.0" & < "8.18" }
+  # "coq"                 { >= "8.20.0" & < "8.21" }
   # This is a dependency of Coq itself.
   "zarith"              { >= "1.11"    }
   # (plus stubs for building with jsoo)

@@ -98,7 +98,9 @@ let mk_vo_path l = Jslib.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
 (* State of the interpreter after init XXX, refactor *)
 let cur_workspace = ref None
-let root_state = ref (Coq.State.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
+let root_state =
+  let st = Vernacstate.freeze_full_state () in
+  ref (Coq.State.of_coq st)
 
 let lsp_cb =
   let perfData ~uri:_ ~version:_ { Fleche.Perf.summary = _; _ } = () in
