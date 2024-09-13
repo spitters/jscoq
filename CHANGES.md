@@ -21,6 +21,8 @@
  - Bump to jsoo 5.9.1, many many thanks to Hugo Heuzard (@ejgallego,
    @hhugo, #372)
  - Bump to yojson 3.0.0, dune 3.16 (@ejgallego, #372)
+ - Add `js_of_ocaml` dependency to the rule generating `coq-pkgs`
+   (@ejgallego)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
