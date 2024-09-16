@@ -58,8 +58,14 @@ FROM coq-base AS jscoq-base
 
 ARG SWITCH
 ARG WORDSIZE
-RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.12.0 ; fi
-RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.12.0+options,ocaml-option-32bit" ; fi
+RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.14.2 ; fi
+RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.14.2+options,ocaml-option-32bit" ; fi
+
+# ---------------------
+# jsCoq toolchain setup
+# ---------------------
+FROM jscoq-preinstall as jscoq-prereq
+
 ARG BRANCH
 
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
