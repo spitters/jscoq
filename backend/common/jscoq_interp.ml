@@ -148,8 +148,8 @@ let init_workspace ~token ~dir opts =
   let vo_load_path = mk_vo_path opts.lib_path in
   let cmdline = Coq.Workspace.CmdLine.
       { coqlib = "/lib"
-      ; findlib_config = None
-      ; ocamlpath = ["/lib"]
+      ; findlib_config = Some "/lib/findlib.conf"
+      ; ocamlpath = []
       ; args = ["-boot"]
       ; require_libraries = []
       ; vo_load_path
