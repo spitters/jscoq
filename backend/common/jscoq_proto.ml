@@ -111,8 +111,7 @@ end
 module Diagnostic = struct
 
   module FailedRequire = struct
-    type t =
-      [%import: Lang.Diagnostic.FailedRequire.t [@with Lang.Range.t := Range.t]]
+    type t = [%import: Lang.Diagnostic.FailedRequire.t [@with Lang.Range.t := Range.t]]
       [@@deriving yojson]
   end
 
