@@ -5,7 +5,7 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.18
+COQ_VERSION := v8.19
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -118,6 +118,7 @@ links:
 	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/wacoq_worker.bc backend/wasm/wacoq_worker.bc
 	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dlllib_stubs.wasm backend/wasm/dlllib_stubs.wasm
 	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dllcoqrun_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
+	ln -sf ../../_build/$(BUILD_CONTEXT)/backend/wasm/dllcoqperf_stubs.wasm backend/wasm/dllcoqperf_stubs.wasm
 
 links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.js backend/wasm/wacoq_worker.bc \
@@ -225,12 +226,12 @@ dist-npm:
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.18.0
-COQ_BRANCH_LATEST = v8.18.0
+COQ_BRANCH = V8.19.2
+COQ_BRANCH_LATEST = v8.19.2
 COQ_REPOS = https://github.com/coq/coq.git
 
 # COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
-COQ_PATCHES = trampoline timeout # fold $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
+COQ_PATCHES = timeout # trampoline fold $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
 COQ_PATCHES|64 = coerce-32bit
 

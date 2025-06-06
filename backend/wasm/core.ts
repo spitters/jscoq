@@ -41,7 +41,7 @@ class IcoqPod extends EventEmitter {
         await this.findlibStartup(); /* @todo */
 
         this._preloadStub();
-    
+
         await this.core.run('/lib/icoq.bc', [], ['wacoq_post']);
     }
 
@@ -56,7 +56,7 @@ class IcoqPod extends EventEmitter {
 
     async loadPackages(uris: string | string[], refresh: boolean = true) {
         if (typeof uris == 'string') uris = [uris];
-        
+
         await Promise.all(uris.map(async uri => {
             try {
                 await this.unzip(uri, '/lib');
@@ -123,11 +123,11 @@ class IcoqPod extends EventEmitter {
             answer = wacoq_post(this.core.to_caml_string(json));
         this._answer(answer);
     }
-    
+
     answer(msgs: any[][]) {
         for (let msg of msgs) this.emit('message', msg);
     }
-    
+
     _answer(ptr: number) {
         var cstr = this.core.proc.userGetCString(ptr);
         this.answer(JSON.parse(<any>cstr));
@@ -149,6 +149,8 @@ class IcoqPod extends EventEmitter {
             'dllbase_internalhash_types_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_internalhash_types_stubs.wasm`);
         this.core.proc.dyld.preload(
             'dllcoqrun_stubs.so', `${this.binDir}/dllcoqrun_stubs.wasm`);
+        this.core.proc.dyld.preload(
+            'dllcoqperf_stubs.so', `${this.binDir}/dllcoqperf_stubs.wasm`);
         /** @ouch these null stubs are needed because of some spurious dependency */
         this.core.proc.dyld.preload(
             'dllbigstringaf_stubs.so', `${this.binDir}/dlllib_stubs.wasm`,
@@ -172,7 +174,7 @@ class IcoqPod extends EventEmitter {
                 }
             }
         );
-    }    
+    }
 }
 
 
