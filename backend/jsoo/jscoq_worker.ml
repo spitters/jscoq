@@ -125,11 +125,9 @@ let load_module = fun cma ->
   Jslibmng.coq_cma_link ~file_path:cma
 
 let load_plugin pg =
-  let legacy, pkg = Mltop.PluginSpec.repr pg in
-  Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
-  match Mltop.PluginSpec.repr pg with
-  | None, _pkg -> ()             (* Findlib; not implemented *)
-  | Some cma, _ -> load_module cma  (* Legacy loading method *)
+  match Mltop.PluginSpec.to_package pg with
+  (* XXX *)
+  | _pkg -> ()             (* Findlib; not implemented *)
 
 (* This is already taken care by the LSP layer *)
 let jscoq_protect f =

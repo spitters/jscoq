@@ -41,11 +41,9 @@ let load_module = Dynlink.loadfile
 (* let load_plugin = Coq.Loader.plugin_handler None *)
 
 let load_plugin pg =
-  let legacy, pkg = Mltop.PluginSpec.repr pg in
-  Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
-  match Mltop.PluginSpec.repr pg with
-  | None, _pkg -> ()             (* Findlib; not implemented *)
-  | Some cma, _ -> load_module cma  (* Legacy loading method *)
+  match Mltop.PluginSpec.to_package pg with
+  (* XXX *)
+  | _pkg -> ()             (* Findlib; not implemented *)
 
 let wasm_cb =
   Jscoq_interp.Callbacks.

@@ -66,7 +66,6 @@ let path_to_coqpath ?(implicit=false) ?(unix_prefix=[]) lib_path =
   Loadpath.{
     unix_path = String.concat "/" phys_path
   ; coq_path = Names.(DirPath.make @@ List.rev_map Id.of_string lib_path)
-  ; has_ml = true
   ; implicit = implicit && is_intrinsic lib_path
   ; recursive = false
   }
