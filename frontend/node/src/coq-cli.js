@@ -74,7 +74,7 @@ export class HeadlessCLI {
         if (opts.E) coq.provider.enqueue(...opts.E.split(/(?<=\.)\s+/));
 
         try {
-            await coq.when_done.promise;
+            await coq.when_done;
             if (debugTime) { console.timeEnd('package import + commands'); }
         }
         catch (e) { console.log("Aborted."); return 1; }

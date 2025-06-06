@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * The headless manager is broken with coq-lsp backend.
  * All the calls need to be readjusted to the new document model.
@@ -15,7 +14,6 @@ import glob from 'glob';
 import unzip from 'fflate-unzip/src/index';
 
 // Backend imports
-import { Future } from '../../../backend/future';
 import { CoqWorker } from '../../../backend/coq-worker';
 import { CoqIdentifier } from '../../../backend/coq-identifier';
 
@@ -85,8 +83,9 @@ class HeadlessCoqManager {
     project: CoqProject
     options: any
 
-    doc: any[]
-    when_done: Future<void>
+    doc: any[];
+    when_done: Promise<void>;
+    when_done_resolve: any;
 
     startup_time: number
     startup_timeEnd: number
@@ -119,7 +118,7 @@ class HeadlessCoqManager {
 
         this.doc = [];
 
-        this.when_done = new Future();
+        this.when_done = new Promise((resolve) => { this.when_done_resolve = resolve; });
 
         this.packages.on('message', ev => {
             if (this.options.log_debug) console.log(ev.data);
@@ -200,7 +199,7 @@ class HeadlessCoqManager {
             this.coq.sendCommand(['Compile', output]);
         }
         else
-            this.when_done.resolve(null);
+            this.when_done_resolve(null);
     }
 
     require(module_name: string, import_=false) {
@@ -295,7 +294,7 @@ class HeadlessCoqManager {
         if (!this.when_done.isFailed()) {
             this.coq.put(filename, buf);
             console.log(` > ${filename}`);
-            this.when_done.resolve(null);
+            this.when_done_resolve(null);
         }
     }
 

@@ -10,7 +10,7 @@
             },
             "plugins": {
                 "prefix": "Coq",
-                "dirpaths": ["ltac", "syntax", "btauto", "cc", "firstorder",
+                "dirpaths": ["ltac", "ltac2_ltac1", "syntax", "btauto", "cc", "firstorder",
                              "ssr", "ssrmatching"]
             }
         },

@@ -84,6 +84,8 @@ I *love* random math $x \cdot y \approx y \cdot x$.
 ```coq
 From Coq Require Import List.
 Import ListNotations.
+
+From Waterproof Require Import Tactics.
 ```
 
 ```coq
@@ -136,8 +138,8 @@ Please edit your code here!
         focus: false,
         debug: false,
         editor: { mode: { 'company-coq': false } },
-        init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith'],
-        all_pkgs: ['coq']
+        init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'ltac2', 'waterproof'],
+        all_pkgs: ['coq', 'waterproof']
     };
 
     JsCoq.start(jscoq_ids, jscoq_opts).then(res => {

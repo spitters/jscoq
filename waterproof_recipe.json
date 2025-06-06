@@ -1,0 +1,14 @@
+{
+    "rootdir": "vendor/coq-waterproof",
+    "builddir": "coq-pkgs",
+    "projects": {
+        "waterproof": {
+            "theories": {
+                "prefix": "Waterproof"
+            },
+            "src": {
+                "prefix": "Waterproof"
+            }
+        }
+    }
+}
