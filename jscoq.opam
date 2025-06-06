@@ -20,6 +20,7 @@ depends: [
   "ppx_deriving_yojson" { >= "3.5.3"            }
   "ppx_import"          { >= "1.11.0"           }
   "lwt_ppx"             { >= "2.0.1"            }
+  "result"              { >= "1.5"              }
   # We should just rely on OPAM's coq-lsp but this is still early
   "sexplib"             { >= "v0.15.0"          }
   "ppx_sexp_conv"       { >= "v0.15.1" & < "v0.18" }
