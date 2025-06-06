@@ -26,7 +26,7 @@ CAMLprim value coq_next_up_byte(value a)            STUB
 CAMLprim value coq_next_down_byte(value a)          STUB
 
 /* coq_fix_code.h */
-
+CAMLprim value coq_accumulate(value unit)           STUB
 CAMLprim value coq_tcode_of_code(value code)        STUB
 CAMLprim value coq_makeaccu (value i)               STUB
 CAMLprim value coq_pushpop (value i)                STUB

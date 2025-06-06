@@ -76,8 +76,8 @@ let coq_info_string () =
   let coqv, ccv, cmag = version                               in
   let subsys = !Callbacks.cb.subsystem_version                in
   let header1 = Printf.sprintf
-      "jsCoq (%s), Coq %s/%4d\n"
-      Jscoq_version.jscoq_version coqv (Int32.to_int cmag)    in
+      "jsCoq (%s), Flèche / coq-lsp %s, Coq %s/%4d\n"
+      Jscoq_version.jscoq_version Fleche.Version.server coqv (Int32.to_int cmag) in
   let header2 = Printf.sprintf
       "OCaml %s, %s\n" ccv subsys                             in
   header1 ^ header2
@@ -98,7 +98,9 @@ let mk_vo_path l = Jslib.paths_to_coqpath ~implicit:!opts.implicit_libs l
 
 (* State of the interpreter after init XXX, refactor *)
 let cur_workspace = ref None
-let root_state = ref (Coq.State.of_coq (Vernacstate.freeze_interp_state ~marshallable:false))
+let root_state =
+  let st = Vernacstate.freeze_full_state () in
+  ref (Coq.State.of_coq st)
 
 let lsp_cb =
   let perfData ~uri:_ ~version:_ { Fleche.Perf.summary = _; _ } = () in

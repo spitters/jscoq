@@ -1,6 +1,6 @@
 {
   "name": "jscoq",
-  "version": "1.99.1",
+  "version": "1.99.2",
   "type": "module",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "main": "frontend/classic/js/index.js",

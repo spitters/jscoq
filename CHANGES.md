@@ -37,6 +37,7 @@
  - replace `Future` by `Promise` in `coq-worker`, this brings the
    backend closer to JSON-RPC libs (@ejgallego, #376)
  - [ci] Use opam 2.3 (@ejgallego, #382)
+ - [coq] Port to Coq 8.18 (@ejallego)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

@@ -137,5 +137,5 @@
   (deps
     backend/wasm/wacoq_worker.bc))
 
-(dirs (:standard _vendor+*))
+(dirs (:standard _vendor+* \ _vendor+v8.17+32bit))
 (vendored_dirs vendor)

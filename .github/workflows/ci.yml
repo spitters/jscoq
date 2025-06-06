@@ -3,9 +3,17 @@ name: JsCoq's CI Action
 on:
   push:
     branches:
+    - 'v9.0'
+    - 'v8.20'
+    - 'v8.19'
+    - 'v8.18'
     - 'v8.17\+lsp'
   pull_request:
     branches:
+    - 'v9.0'
+    - 'v8.20'
+    - 'v8.19'
+    - 'v8.18'
     - 'v8.17\+lsp'
 
   # Allows you to run this workflow manually from the Actions tab
