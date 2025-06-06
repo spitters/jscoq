@@ -23,6 +23,14 @@
       -I%{ocaml-config:standard_library}")))
 
 (rule
+ (target dllcoqperf_stubs.wasm)
+ (deps perf_stubs.c)
+ (action
+  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
+	  perf_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
+      -I%{ocaml-config:standard_library}")))
+
+(rule
  (target dlllib_stubs.wasm)
  (deps lib_stubs.c)
  (action
