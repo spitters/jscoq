@@ -3,6 +3,7 @@ name: JsCoq's CI Action
 on:
   push:
     branches:
+    - 'v9.1'
     - 'v9.0'
     - 'v8.20'
     - 'v8.19'
@@ -10,6 +11,7 @@ on:
     - 'v8.17\+lsp'
   pull_request:
     branches:
+    - 'v9.1'
     - 'v9.0'
     - 'v8.20'
     - 'v8.19'

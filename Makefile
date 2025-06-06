@@ -5,7 +5,7 @@
 -include ./config.inc
 
 # Coq Version
-COQ_VERSION := v8.19
+COQ_VERSION := v8.20
 JSCOQ_BRANCH :=
 
 JSCOQ_VERSION := $(COQ_VERSION)
@@ -226,12 +226,12 @@ dist-npm:
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
-COQ_BRANCH = V8.19.2
-COQ_BRANCH_LATEST = v8.19.2
+COQ_BRANCH = V8.20.1
+COQ_BRANCH_LATEST = v8.20.1
 COQ_REPOS = https://github.com/coq/coq.git
 
 # COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
-COQ_PATCHES = timeout # trampoline fold $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
+COQ_PATCHES = interrupt trampoline unix_stat # timeout fold $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
 
 COQ_PATCHES|64 = coerce-32bit
 
