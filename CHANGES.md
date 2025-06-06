@@ -36,6 +36,7 @@
    browsers for `SharedArrayBuffer` support (@ejgallego, #371)
  - replace `Future` by `Promise` in `coq-worker`, this brings the
    backend closer to JSON-RPC libs (@ejgallego, #376)
+ - [ci] Use opam 2.3 (@ejgallego, #382)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
