@@ -22,11 +22,11 @@ jobs:
       OPAMYES: "true"
       NJOBS: "2"
       JSCOQ_ARCH: ${{ matrix.jscoq_arch }}
-      OPAM_LINUX_URL: https://github.com/ocaml/opam/releases/download/2.1.3/opam-2.1.3-x86_64-linux
-      OPAM_MACOS_URL: https://github.com/ocaml/opam/releases/download/2.1.3/opam-2.1.3-x86_64-darwin
+      OPAM_LINUX_URL: https://github.com/ocaml/opam/releases/download/2.3.0/opam-2.3.0-x86_64-linux
+      OPAM_MACOS_URL: https://github.com/ocaml/opam/releases/download/2.3.0/opam-2.3.0-x86_64-darwin
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: 'true'
       - name: Install apt dependencies
@@ -34,10 +34,10 @@ jobs:
           sudo apt-get install aptitude
           sudo dpkg --add-architecture i386
           sudo aptitude -o Acquire::Retries=30 update -q
-          sudo aptitude -o Acquire::Retries=30 install gcc-multilib g++-multilib libgmp-dev:i386 -y
-      - uses: actions/setup-node@v3
+          sudo aptitude -o Acquire::Retries=30 install gcc-multilib g++-multilib pkg-config libgmp-dev:i386 -y
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '22'
           cache: 'npm'
       - name: OPAM Set up
         run: |
@@ -58,31 +58,34 @@ jobs:
           echo 'Building Coq...' # && echo -en 'travis_fold:start:coq.build\\r'
           make coq-get
           # echo -en 'travis_fold:end:coq.build\\r'
-      - name: jsCoq build
+      - name: jsCoq build (JSOO)
         run: |
           set -e
-          echo 'Building JsCoq...' # && echo -en 'travis_fold:start:jscoq.build\\r'
+          echo 'Building JsCoq (JSOO)...'
           make jscoq
-          # echo -en 'travis_fold:end:jscoq.build\\r'
-          # echo 'Building Addons...' && echo -en 'travis_fold:start:addons.build\\r'
-          # EJGA: We need to resurrect this in a different way.
+      - name: jsCoq addons
+        run: |
+          set -e
+          echo 'Building addons disabled...'
+          # echo 'Building Addons...'
+          # EJGA: We need to resurrect this
           # make addons
-          # echo -en 'travis_fold:end:addons.build\\r'
       - name: jsCoq test
         run: |
           set -e
-          echo 'Testing JsCoq...' # && echo -en 'travis_fold:start:jscoq.build\\r'
+          echo 'Testing JsCoq disabled...'
           # EJGA: Disabled for now, we need to see how to update the CLI
           # npm install # EJGA: uggg, but otherwise this won't work.
           # make test
-          # echo -en 'travis_fold:end:jscoq.build\\r'
   docker:
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
       # - name: Login to DockerHub
       #   uses: docker/login-action@v1
       #   with:
@@ -90,12 +93,13 @@ jobs:
       #     password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build (no push atm)
         id: docker_build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           file: etc/docker/Dockerfile
           context: etc/docker
           target: jscoq-addons
           push: false
           tags: jscoq/jscoq:latest
+          build-args: BRANCH=${{ env.BRANCH_NAME }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}

@@ -21,6 +21,22 @@
  - Bump to jsoo 5.9.1, many many thanks to Hugo Heuzard (@ejgallego,
    @hhugo, #372)
  - Bump to yojson 3.0.0, dune 3.16 (@ejgallego, #372)
+ - Add `js_of_ocaml` dependency to the rule generating `coq-pkgs`
+   (@ejgallego)
+ - Have Docker CI use the PR branch on PR CI (@ejgallego, #321)
+ - Adapt `dist` targets and Docker build to new setup, note this
+   removes the wasm build from Docker as we are now unified.
+   (@ejgallego, #334)
+ - Bump node from 16 to 22 LTS (@ejgallego, #369)
+ - Bump docker build action to v6 (@ejgallego, #368)
+ - Streamline Docker build (@ejgallego, #367)
+ - Bump Debian base Docker to Debian 12 (@ejgallego, #370)
+ - `make serve` now properly sets headers so
+   `window.crossOriginIsolated` holds, this is required on modern
+   browsers for `SharedArrayBuffer` support (@ejgallego, #371)
+ - replace `Future` by `Promise` in `coq-worker`, this brings the
+   backend closer to JSON-RPC libs (@ejgallego, #376)
+ - [ci] Use opam 2.3 (@ejgallego, #382)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

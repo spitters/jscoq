@@ -1,6 +1,6 @@
 {
   "name": "jscoq",
-  "version": "0.17.0",
+  "version": "1.99.1",
   "type": "module",
   "description": "A port of Coq to JavaScript -- run Coq in your browser",
   "main": "frontend/classic/js/index.js",
@@ -62,7 +62,7 @@
     "@types/lodash": "^4.14.197",
     "@types/mkdirp": "^1.0.1",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.4.8",
+    "@types/node": "^22.5.5",
     "@types/pako": "^2.0.0",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
@@ -91,17 +91,13 @@
     "webpack-cli": "^4.10.0"
   },
   "files": [
-    "frontend",
-    "backend/*.js",
-    "backend/*.ts",
-    "backend/jsoo/*.bc.js",
-    "backend/wasm/*.bc",
+    "dist/wacoq_worker.js",
+    "dist/frontend/index.js",
+    "dist/frontend/index.css",
     "backend/wasm/*.wasm",
     "coq-pkgs",
-    "dist",
     "examples",
-    "docs",
-    "jscoq.js",
+    "docs/*.html",
     "index.html"
   ],
   "scripts": {
@@ -111,6 +107,7 @@
     "typecheck": "tsc -b .",
     "webpack": "webpack",
     "esbuild-cli": "node esbuild-cli.mjs",
+    "release-cli": "node esbuild-cli.mjs --minify --sourcemap=no",
     "esbuild-pkg": "node esbuild-pkg.mjs"
   },
   "repository": {
