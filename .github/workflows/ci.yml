@@ -24,6 +24,7 @@ jobs:
       JSCOQ_ARCH: ${{ matrix.jscoq_arch }}
       OPAM_LINUX_URL: https://github.com/ocaml/opam/releases/download/2.3.0/opam-2.3.0-x86_64-linux
       OPAM_MACOS_URL: https://github.com/ocaml/opam/releases/download/2.3.0/opam-2.3.0-x86_64-darwin
+      WASI_SDK_URL: https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,11 +40,11 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - name: OPAM Set up
+      - name: OPAM Setup
         run: |
           sudo curl -sL $OPAM_LINUX_URL -o /usr/bin/opam &&
           sudo chmod 755 /usr/bin/opam
-      - name: OCaml Set up
+      - name: OCaml Setup
         run: |
           opam init -y --bare --disable-sandboxing || true
           eval $(opam env)
@@ -51,6 +52,10 @@ jobs:
           opam switch
           opam list
           opam config var root
+      - name: WASI Setup
+        run: |
+          wget --quiet -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
+          ( cd /opt && sudo tar xf /tmp/wasi-sdk.tar.gz && sudo ln -s wasi-sdk-* wasi-sdk )
       - name: Coq build
         run: |
           echo 'Using Node.js:' && node --version
@@ -63,6 +68,11 @@ jobs:
           set -e
           echo 'Building JsCoq (JSOO)...'
           make jscoq
+      - name: jsCoq build (WASM)
+        run: |
+          set -e
+          echo 'Building JsCoq (WACOQ)...'
+          make wacoq
       - name: jsCoq addons
         run: |
           set -e
