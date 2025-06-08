@@ -28,8 +28,7 @@ endif
 BUILD_CONTEXT = jscoq$(VARIANT)
 BUILDDIR = _build/$(BUILD_CONTEXT)
 
-OPAMENV = eval `opam env --set-switch --switch $(BUILD_CONTEXT)`
-DUNE = $(OPAMENV) && dune
+DUNE = opam exec --switch=$(BUILD_CONTEXT) -- dune
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -242,8 +241,7 @@ $(COQSRC):
 coq_configure=./tools/configure/configure.exe
 
 coq-get: $(COQSRC)
-	$(OPAMENV) && \
-	cd $(COQSRC) && dune exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no
+	cd $(COQSRC) && $(DUNE) exec $(DUNE_FLAGS) $(coq_configure) --context=$(BUILD_CONTEXT) -- -prefix $(COQDIR) -native-compiler no -bytecode-compiler no
 	# Temporarily re-enable Dune for libs (disabled in Coq upstream)
 	cd $(COQSRC) && cp theories/dune.disabled theories/dune
 	cd $(COQSRC) && cp user-contrib/Ltac2/dune.disabled user-contrib/Ltac2/dune
