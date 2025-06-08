@@ -485,7 +485,7 @@ export class CoqManager {
         let init_opts : CoqInitOptions = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
-                debug: true,
+                debug: this.coq.config.debug,
                 lib_path: this.getLoadPath(),
                 lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };
