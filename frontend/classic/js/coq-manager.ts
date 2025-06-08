@@ -10,7 +10,7 @@ import _ from 'lodash';
 
 // Backend imports
 import { CoqWorker, CoqSubprocessAdapter, CoqInitOptions,
-         Diagnostic, backend } from '../../../backend';
+         backend, PublishDiagnosticParams } from '../../../backend';
 
 // UI imports
 import $ from 'jquery';
@@ -387,9 +387,10 @@ export class CoqManager {
     }
 
     // Coq document diagnostics.
-    async coqNotification(diags : Diagnostic[], version : number) {
+    async coqNotification( params : PublishDiagnosticParams ) {
+        let { uri, version, diagnostic }  = params;
 
-        console.log("Diags received: " + diags.length.toString());
+        console.log("Diags received: " + diagnostic.length.toString());
 
         if (this.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
@@ -399,7 +400,7 @@ export class CoqManager {
         this.editor.clearDiagnostics();
 
         let needRecheck = false, pending;
-        for (let d of diags.reverse()) {
+        for (let d of diagnostic.reverse()) {
             for (let extra of d.extra ?? []) {
                 /** @todo it seems that these are sent more than once */
                 if (extra[0] === 'FailedRequire' &&
@@ -484,7 +485,7 @@ export class CoqManager {
         let init_opts : CoqInitOptions = {
                 implicit_libs: this.options.implicit_libs,
                 coq_options: this._parseOptions(this.options.coq || {}),
-                debug: true,
+                debug: this.coq.config.debug,
                 lib_path: this.getLoadPath(),
                 lib_init: this.options.prelude ? [PKG_ALIASES.prelude] : []
             };

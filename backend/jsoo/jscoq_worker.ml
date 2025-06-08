@@ -154,6 +154,8 @@ let jscoq_cmd_of_obj (cobj : < .. > Js.t) =
 (* Message from the main thread *)
 let event_queue = ref []
 
+let debug_receive = false
+
 let on_msg _doc msg =
 
   let log_cmd cmd =
@@ -165,7 +167,7 @@ let on_msg _doc msg =
 
   match jscoq_cmd_of_obj msg with
   | Result.Ok cmd  ->
-    log_cmd cmd;
+    if debug_receive then log_cmd cmd;
     event_queue := !event_queue @ [cmd]
   | Result.Error s -> post_answer @@
     JsonExn ("Error in JSON conv: " ^ s ^ " | " ^ (Js.to_string (Json.output msg)))
@@ -214,7 +216,7 @@ let rec process_queue () =
   | [] ->
     ignore(setTimeout process_queue 0.1)
   | cmd :: rest ->
-    Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1);
+    (* Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1); *)
     let cmd, rest = filter_queue (cmd, []) rest in
     event_queue := rest;
     let token = Coq.Limits.Token.create () in
