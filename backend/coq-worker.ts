@@ -360,17 +360,20 @@ export class CoqWorker {
         this.sendCommand(["Register", filename]);
     }
 
-    interruptSetup() {
+    interruptSetup(log) {
         if (typeof SharedArrayBuffer !== 'undefined') {
             this.intvec = new Int32Array(new SharedArrayBuffer(4));
             try {
+                log('Requesting Interruption Setup to Worker');
                 this.sendDirective(["InterruptSetup", this.intvec]);
             }
             catch (e) {  /* this fails in Firefox 72 even with SharedArrayBuffer enabled */
+                log('SharedArrayBuffer is available but not serializable -- interrupts disabled');
                 console.warn('SharedArrayBuffer is available but not serializable -- interrupts disabled');
             }
         }
         else {
+            log('SharedArrayBuffer is available but not serializable -- interrupts disabled');
             console.warn('SharedArrayBuffer is not available -- interrupts disabled');
         }
     }
@@ -484,5 +487,5 @@ function prefetchResource(url, progress = (pc:number|undefined,ev:ProgressEvent)
 }
 
 // Local Variables:
-// js-indent-level: 4
+// typescript-indent-level: 4
 // End:

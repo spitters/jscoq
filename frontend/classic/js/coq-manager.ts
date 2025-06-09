@@ -361,7 +361,7 @@ export class CoqManager {
     }
 
     async coqBoot() {
-        this.coq.interruptSetup();
+        this.coq.interruptSetup((msg) => { this.layout.log(msg, 'Info'); });
         try {
             await this.packages.loadDeps(this.options.init_pkgs);
         }
@@ -466,6 +466,7 @@ export class CoqManager {
 
         var pkgs = this.options.init_pkgs;
 
+        this.layout.log(info, "Info");
         this.layout.splash(info,
             pkgs.length == 0 ? undefined :
               "Loading libraries. Please wait.\n"
@@ -801,5 +802,5 @@ const PKG_AFFILIATES = [  // Affiliated packages in @jscoq/@wacoq scope
 ];
 
 // Local Variables:
-// js-indent-level: 4
+// typescript-indent-level: 4
 // End:

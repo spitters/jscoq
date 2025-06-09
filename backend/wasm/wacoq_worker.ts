@@ -1,7 +1,5 @@
 import { IcoqPod } from './core';
 
-
-
 function postMessage(msg) {
     (<any>self).postMessage(msg);
 }

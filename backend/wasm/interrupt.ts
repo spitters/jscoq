@@ -1,4 +1,3 @@
-
 /**
  * Allows to signal the worker that it is requested to interrupt its current
  * computation.
@@ -27,6 +26,5 @@ class WorkerInterrupts {
         return false;
     }
 }
-
 
 export { WorkerInterrupts }
