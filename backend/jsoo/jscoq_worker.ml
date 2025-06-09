@@ -119,14 +119,16 @@ let setup_std_printers () =
 
 external coq_vm_trap : unit -> unit = "coq_vm_trap"
 
+let debug_load = false
+
 (* Custom toplevel is used for bytecode-to-js dynlink  *)
 let load_module = fun cma ->
-  Format.eprintf "load_cma: %s@\n%!" cma;
+  if debug_load then Format.eprintf "load_cma: %s@\n%!" cma;
   Jslibmng.coq_cma_link ~file_path:cma
 
 let load_plugin pg =
   let legacy, pkg = Mltop.PluginSpec.repr pg in
-  Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
+  if debug_load then Format.eprintf "load_plugin: %s / %s@\n%!" (Option.default "null" legacy) pkg;
   match Mltop.PluginSpec.repr pg with
   | None, _pkg -> ()             (* Findlib; not implemented *)
   | Some cma, _ -> load_module cma  (* Legacy loading method *)

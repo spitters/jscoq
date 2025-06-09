@@ -1,7 +1,3 @@
-.PHONY: all clean force
-.PHONY: jscoq jscoq-static jscoq_worker links links-clean
-.PHONY: dist serve
-
 -include ./config.inc
 
 # Coq Version
@@ -71,6 +67,7 @@ null  :=
 space := $(null) #
 comma := ,
 
+.PHONY: all
 all:
 	@echo "Welcome to jsCoq makefile. Targets are:"
 	@echo ""
@@ -89,6 +86,7 @@ all:
 	@echo "       coq: download and build Coq and addon libraries"
 	@echo "   install: install Coq version used by jsCoq to ~/.opam/$(BUILD_CONTEXT)"
 
+.PHONY: jscoq-static jscoq wacoq both jscoq_worker wacoq_worker install links links-clean force
 jscoq-static: force
 	$(DUNE) build @jscoq-static $(DUNE_FLAGS)
 
@@ -97,6 +95,9 @@ jscoq: force
 
 wacoq: force
 	$(DUNE) build @wacoq $(DUNE_FLAGS)
+
+both: force
+	$(DUNE) build @jscoq @wacoq $(DUNE_FLAGS)
 
 coq-pkgs: force
 	$(DUNE) build coq-pkgs $(DUNE_FLAGS)
@@ -151,8 +152,7 @@ libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 # Developer Zone                                                       #
 ########################################################################
 
-.PHONY: test watch serve dev
-
+.PHONY: test watch serve serve_artifact dev
 test:
 	$(DUNE) exec --context=$(BUILD_CONTEXT) $(DUNE_FLAGS) -- npx mocha tests/main.js
 
@@ -162,6 +162,9 @@ watch: jscoq
 serve:
 	npx serve -c ../../etc/serve.json -C -l 8013 $(BUILDDIR)
 
+serve-artifact:
+	npx serve -c ../../etc/serve.json -C -l 8013 $(_DDEST)
+
 dev:
 	$(MAKE) serve &
 	$(MAKE) watch
@@ -170,6 +173,7 @@ dev:
 # Clean                                                                #
 ########################################################################
 
+.PHONY: clean distclean
 clean:
 	$(DUNE) clean
 	rm -f jscoq-*.tgz
@@ -181,6 +185,26 @@ distclean: clean
 # Dists                                                                #
 ########################################################################
 
+# EJGA: This is a minimal functional distribution, it should probably
+# replace dist-tarball
+
+# Base files
+_DFILES_BASE = index.html jscoq.js coq-pkgs dist etc/serve.json
+
+# This should at some point be bundled with esbuild
+_DEXTRA_BASE=backend/wasm/wacoq_worker.bc backend/wasm/*.wasm backend/jsoo/jscoq_worker.bc.js \
+	node_modules/ocaml-wasm node_modules/@ocaml-wasm node_modules/bootstrap/dist \
+	frontend/classic/css frontend/classic/images docs/quick-help.html
+
+_DFILES = ${addprefix $(BUILDDIR)/./, $(_DFILES_BASE) $(_DEXTRA_BASE)}
+
+_DDEST=_build/artifact
+
+.PHONY: dist-artifact
+dist-artifact: both
+	rsync -avpR --delete $(_DFILES) $(_DDEST)
+
+.PHONY: dist dist-npm dist-tarball
 dist: dist-npm dist-tarball
 
 BUILDOBJ = ${addprefix $(BUILDDIR)/./,jscoq.js coq-pkgs frontend backend dist examples docs}

@@ -38,6 +38,9 @@
    backend closer to JSON-RPC libs (@ejgallego, #376)
  - [ci] Use opam 2.3 (@ejgallego, #382)
  - [coq] Port to Coq 8.18 (@ejallego)
+ - [coq] Port to Coq 8.19 (@ejallego)
+ - [coq] Port to Coq 8.20 (@ejallego @corwin-of-amber @herbelin)
+ - [ci] Build jsCoq artifact on CI
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

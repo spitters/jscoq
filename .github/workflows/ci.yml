@@ -97,6 +97,14 @@ jobs:
           # EJGA: Disabled for now, we need to see how to update the CLI
           # npm install # EJGA: uggg, but otherwise this won't work.
           # make test
+      - name: Prepare artifact
+        run: make dist-artifact
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jsCoq_${{ matrix.jscoq_arch }}_${{ github.sha }}
+          path: _build/artifact
+          compression-level: 9
   docker:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
