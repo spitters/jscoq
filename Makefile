@@ -21,10 +21,19 @@ else
 VARIANT = +32bit
 endif
 
-BUILD_CONTEXT = jscoq$(VARIANT)
+# Local switch
+ifeq ($(SWITCH_NAME),.)
+BUILD_SWITCH = ${shell pwd}
+DUNE_WORKSPACE = $(current_dir)/dune-workspace.local
+BUILD_CONTEXT = default
+else
+BUILD_CONTEXT = $(SWITCH_NAME)
+BUILD_SWITCH = $(BUILD_CONTEXT)
+endif
+
 BUILDDIR = _build/$(BUILD_CONTEXT)
 
-DUNE = opam exec --switch=$(BUILD_CONTEXT) -- dune
+DUNE = opam exec --switch=$(BUILD_SWITCH) -- dune
 
 # ugly but I couldn't find a better way
 current_dir := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))

@@ -25,7 +25,11 @@ jobs:
   build:
     strategy:
       matrix:
-        jscoq_arch: [32, 64]
+        include:
+          - jscoq_arch: 32
+            ocaml_compiler: "ocaml-variants.4.12.0+options,ocaml-option-32bit"
+          - jscoq_arch: 64
+            ocaml_compiler: "ocaml-base-compiler.4.12.0"
     env:
       OPAMJOBS: "2"
       OPAMROOTISOK: "true"
@@ -36,75 +40,82 @@ jobs:
       OPAM_MACOS_URL: https://github.com/ocaml/opam/releases/download/2.3.0/opam-2.3.0-x86_64-darwin
       WASI_SDK_URL: https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-12/wasi-sdk-12.0-linux.tar.gz
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: 'true'
+      # OPAM figures out everything but the libgmp-dev:i386
+      # dependency, maybe worth fixing this upstream in the opam
+      # repository
       - name: Install apt dependencies
+        if: matrix.jscoq_arch == '32'
         run: |
           sudo apt-get install aptitude
           sudo dpkg --add-architecture i386
           sudo aptitude -o Acquire::Retries=30 update -q
           sudo aptitude -o Acquire::Retries=30 install gcc-multilib g++-multilib pkg-config libgmp-dev:i386 -y
-      - uses: actions/setup-node@v4
+
+      - name: 🔭 Checkout code
+        uses: actions/checkout@v4
         with:
-          node-version: '22'
-          cache: 'npm'
-      - name: OPAM Setup
+          submodules: 'true'
+
+      - name: 🐫 Setup OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml_compiler}}
+          dune-cache: true
+
+      - name: 🐫🐪🐫 Get OCaml dependencies
         run: |
-          sudo curl -sL $OPAM_LINUX_URL -o /usr/bin/opam &&
-          sudo chmod 755 /usr/bin/opam
-      - name: OCaml Setup
-        run: |
-          opam init -y --bare --disable-sandboxing || true
-          eval $(opam env)
-          ./etc/toolchain-setup.sh --"$JSCOQ_ARCH"
+          ./etc/toolchain-setup.sh --"$JSCOQ_ARCH" --local --ci
           opam switch
           opam list
           opam config var root
+
+      - name: 🚀 Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
       - name: WASI Setup
         run: |
           wget --quiet -O/tmp/wasi-sdk.tar.gz ${WASI_SDK_URL}
           ( cd /opt && sudo tar xf /tmp/wasi-sdk.tar.gz && sudo ln -s wasi-sdk-* wasi-sdk )
-      - name: Coq build
-        run: |
-          echo 'Using Node.js:' && node --version
-          set -e
-          echo 'Building Coq...' # && echo -en 'travis_fold:start:coq.build\\r'
-          make coq-get
-          # echo -en 'travis_fold:end:coq.build\\r'
+
+      - name: Coq download, patching, and setup
+        run: make coq-get
+
       - name: jsCoq build (JSOO)
-        run: |
-          set -e
-          echo 'Building JsCoq (JSOO)...'
-          make jscoq
+        run: make jscoq
+
       - name: jsCoq build (WASM)
-        run: |
-          set -e
-          echo 'Building JsCoq (WACOQ)...'
-          make wacoq
+        run: make wacoq
+
       - name: jsCoq addons
         run: |
           set -e
           echo 'Building addons disabled...'
-          # echo 'Building Addons...'
-          # EJGA: We need to resurrect this
           # make addons
+
       - name: jsCoq test
+        if: false
         run: |
           set -e
           echo 'Testing JsCoq disabled...'
           # EJGA: Disabled for now, we need to see how to update the CLI
           # npm install # EJGA: uggg, but otherwise this won't work.
           # make test
+
       - name: Prepare artifact
         run: make dist-artifact
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: jsCoq_${{ matrix.jscoq_arch }}_${{ github.sha }}
           path: _build/artifact
           compression-level: 9
+
   docker:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
