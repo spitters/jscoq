@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 NJOBS=4
 VERB= # -vv
 
@@ -15,6 +17,8 @@ case `uname` in
   *)      WORD_SIZE=32 ;;
 esac
 
+# Dune compilation breaks if use a CI variable lol
+JSCOQ_CI=no
 WRITE_CONFIG=no
 
 if [ -e config.inc ] ; then . config.inc
@@ -22,8 +26,10 @@ else WRITE_CONFIG=yes ; fi
 
 for i in "$@"; do
   case $i in
-    --32) WORD_SIZE=32; WRITE_CONFIG=yes ;;
-    --64) WORD_SIZE=64; WRITE_CONFIG=yes ;;
+    --32) WORD_SIZE=32; WRITE_CONFIG=yes; switch_name=jscoq+32bit;;
+    --64) WORD_SIZE=64; WRITE_CONFIG=yes; switch_name=jscoq+64bit;;
+    --ci) WRITE_CONFIG=yes; JSCOQ_CI=yes;;
+    --local) WRITE_CONFIG=yes; switch_name=.;;
     *)    echo "unknown option '$i'."; exit ;;
   esac
 done
@@ -31,24 +37,33 @@ done
 create_switch() {
 
   case $WORD_SIZE in
-    32) switch_name=jscoq+32bit; packages="ocaml-variants.$OCAML_VER+options,ocaml-option-32bit";;
-    64) switch_name=jscoq+64bit; packages=ocaml-base-compiler.$OCAML_VER ;;
+    32) packages="ocaml-variants.$OCAML_VER+options,ocaml-option-32bit";;
+    64) packages=ocaml-base-compiler.$OCAML_VER ;;
   esac
 
-  opam switch -j $NJOBS create $switch_name --packages=$packages
-  opam switch $switch_name || exit
-  eval `opam env`
-
+  # In CI _opam is setup by setup-ocaml action
+  if [[ $JSCOQ_CI == 'no' ]]
+  then
+      opam switch -j $NJOBS create $switch_name --packages=$packages -y
+      opam switch $switch_name || exit
+  fi
 }
 
 install_deps() {
 
-  opam update
+  if [[ $JSCOQ_CI == 'no' ]]
+  then
+      opam update
+      opam pin add -y -n --kind=path jscoq .
+  fi
 
-  opam pin add -y -n --kind=path jscoq .
+  # Setup-ocaml action does perform the pinning
   opam install -y --deps-only $VERB -j $NJOBS jscoq
-  opam pin remove jscoq
 
+  if [[ $JSCOQ_CI == 'no' ]]
+  then
+      opam pin remove jscoq
+  fi
 }
 
 post_install() {
@@ -58,13 +73,15 @@ post_install() {
   # 32-bit native compilation on macOS is broken and we found no other
   # way to disable it.
   # This has to take place only after install_deps.
+  eval $(opam env)
+
   case `uname`/$WORD_SIZE in
     Darwin/32) rm -f $OPAM_SWITCH_PREFIX/bin/ocamlopt* ;;
   esac
 
 }
 
-if [ $WRITE_CONFIG == yes ] ; then echo "WORD_SIZE=$WORD_SIZE" > config.inc ; fi
+if [ $WRITE_CONFIG == yes ] ; then echo -e "WORD_SIZE=$WORD_SIZE\nSWITCH_NAME=$switch_name" > config.inc ; fi
 
 create_switch
 install_deps
