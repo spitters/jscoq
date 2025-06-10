@@ -38,6 +38,7 @@
    (source_tree backend)
    (source_tree examples)
   index.html
+  etc/serve.json
   jscoq.install))
 
 (alias
@@ -63,6 +64,7 @@
 ; Disabled in the lsp / esbuild branch
 ; dist-webpack
   index.html
+  etc/serve.json
   coq-pkgs))
 
 ; JavaScript build (esbuild)
