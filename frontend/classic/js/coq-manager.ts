@@ -437,10 +437,12 @@ export class CoqManager {
 
         /* if packages were loaded, need to re-create the document
          * because the loadpath has changed */
-        if (needRecheck) this.refreshWorkspace();
+        if (needRecheck) {
+          this.refreshWorkspace();
 
-        /* Refresh goals at cursor */
-        this.setGoalCursor(this.editor.getCursorOffset());
+          /* Refresh goals at cursor */
+          this.setGoalCursor(this.editor.getCursorOffset());
+        }
     }
 
     coqLog(level, msg) {

@@ -116,6 +116,29 @@ jobs:
           path: _build/artifact
           compression-level: 9
 
+  cypress:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        include:
+          - jscoq_arch: 32
+          # This is for now broken, we need to re-apply the 64 bit patches
+          # - jscoq_arch: 64
+    steps:
+      - name: 🔭 Checkout code
+        uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: jsCoq_${{ matrix.jscoq_arch }}_${{ github.sha }}
+          path: _build/artifact
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          start: make serve-artifact
+          wait-on: 'http://localhost:8013'
+
   typecheck:
     runs-on: ubuntu-latest
     steps:
