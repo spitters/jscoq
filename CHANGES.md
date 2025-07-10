@@ -41,6 +41,11 @@
  - [coq] Port to Coq 8.19 (@ejallego)
  - [coq] Port to Coq 8.20 (@ejallego @corwin-of-amber @herbelin)
  - [ci] Build jsCoq artifact on CI
+ - [cm5] Fix longstanding issue with CodeMirror completion
+   understanding backlash using physical keyboard codes. This made
+   jsCoq hard to use in non US keyboards layouts, like French or
+   Spanish (@helguo, #395 , cc
+   https://github.com/ejgallego/CodeMirror-TeX-input/pull/3 )
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
