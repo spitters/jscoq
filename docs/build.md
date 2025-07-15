@@ -6,7 +6,7 @@ on a Unix-like system. The required packages can be obtained using
 
 ## System-level Prerequisites
 
-In case of problems, we recommend looking first at our [Dockerfile](../etc/Docker/Dockerfile)
+In case of problems, we recommend looking first at our [Dockerfile](../etc/docker/Dockerfile)
 which contains detailed package and build instructions for Debian (and please feel free
 to contribute a OSX CI job).
 
@@ -48,7 +48,7 @@ packages into a switch called `jscoq+32bit`.
 
 On macOS 10.14 and above, and on WSL you will have trouble building
  32-bit executables. To use a 64-bit toolchain, include the `--64` flag:
-```
+```sh
 ./etc/toolchain-setup.sh --64
 ```
 
@@ -60,7 +60,7 @@ tree.
  _Word of caution about the 64-bit build:_ Using `--64` means that `.vo` files will be compiled on your native 64-bit architecture, using [a patch](https://github.com/jscoq/jscoq/blob/v8.16/etc/patches/coerce-32bit.patch) that attempts to make them compatible with the 32-bit runtime in the browser.
  While this has worked so far, it is brittle and may cause some unexpected behavior in certain corner cases.
 
-**Important Note:** If you plan to build any addons which are built using `coq_makefile`, then you should run `opam switch jscoq+32bit` [or `+64bits`] before any `make` command, in order to choose the right version
+**Important Note:** If you plan to build any addons which are built using `coq_makefile`, then you should run `opam switch jscoq+32bit` [or `+64bit`] before any `make` command, in order to choose the right version
 of OCaml and Coq.
 For Dune builds, configure the switch in your `dune-workspace`.
 
@@ -79,15 +79,15 @@ To build a usable jsCoq version, just do:
 make jscoq
 ```
 
-This will create a working distribution under `_build/jscoq+32bit/` (or `_build/jscoq+64bit`).
+This will create a working distribution under `_build/jscoq+32bit/` (or `_build/jscoq+64bit/`).
 
 Now serve the files from the distribution directory via HTTP (`make serve`), and
-navigate your browser to `http://localhost:8030/`.
+navigate your browser to `http://localhost:8013/`.
 
 You can also build the `wacoq` version using:
 
 ```sh
-make jscoq
+make wacoq
 ```
 
 ### Debugging
@@ -123,7 +123,7 @@ make
 ```
 
  8. Create NPM packages for compiled libraries.
-```
+```sh
 make pack   # in jscoq-addons working directory
 ```
 

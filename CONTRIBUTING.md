@@ -16,7 +16,7 @@ make serve
 
 then point your browser to `http://localhost:8013`
 
-See [./docs/build](./docs/build) for more detailed information on
+See [build.md](./docs/build.md) for more detailed information on
 build and dependencies.
 
 ### Project and source code organization
@@ -87,19 +87,19 @@ We prefer GPG signed commits as well as `Signed-off-by` commits.
 
 We have some [soft] commit tag conventions:
 
-- [jscoq]: ML/Coq interface
-- [ui]: Html/Css commit
-- [cm]: CodeMirror provider
-- [libs]: Coq Library support and format
-- [doc]: Documentation
-- [addons]: Addons support
-- [build]: Build system
-- [feature]: Adding a new feature
-- [bugfix]: Bug fix
-- [refactor]: Refactoring commit (no functional change intended)
-- [ci] / [travis]: Continuous integration
-- [test]: Adding or modifying a test
-- [misc]: Miscellanenous small things
+- [jscoq] : ML/Coq interface
+- [ui] : Html/Css commit
+- [cm] : CodeMirror provider
+- [libs] : Coq Library support and format
+- [doc] : Documentation
+- [addons] : Addons support
+- [build] : Build system
+- [feature] : Adding a new feature
+- [bugfix] : Bug fix
+- [refactor] : Refactoring commit (no functional change intended)
+- [ci] / [travis] : Continuous integration
+- [test] : Adding or modifying a test
+- [misc] : Miscellanenous small things
 
 ### Previous jsCoq versions
 

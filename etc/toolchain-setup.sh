@@ -24,6 +24,16 @@ WRITE_CONFIG=no
 if [ -e config.inc ] ; then . config.inc
 else WRITE_CONFIG=yes ; fi
 
+if [ $# -eq 0 ] ; then
+  # require an argument
+  # echo "no argument provided."
+  # echo "usage : $(basename $0) {--32 | -- 64 | --ci | --local}";
+  # exit
+
+  # --32 as default
+  WORD_SIZE=32; WRITE_CONFIG=yes; switch_name=jscoq+32bit
+fi
+
 for i in "$@"; do
   case $i in
     --32) WORD_SIZE=32; WRITE_CONFIG=yes; switch_name=jscoq+32bit;;
