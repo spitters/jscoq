@@ -46,8 +46,10 @@
    jsCoq hard to use in non US keyboards layouts, like French or
    Spanish (@helguo, #395 , cc
    https://github.com/ejgallego/CodeMirror-TeX-input/pull/3 )
+ - [build] Fix bug about opam switch name in `toolchain-setup.sh`
+   introduced in #387 (@helguo, #396)
  - Have Docker CI use the PR repository when doing CI for a PR CI
-   (@helguo, @ejgallego, cc #321, #)
+   (@helguo, @ejgallego, cc: #321, #397)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
