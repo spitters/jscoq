@@ -18,41 +18,36 @@ case `uname` in
 esac
 
 # Dune compilation breaks if use a CI variable lol
+JSCOQ_LOCAL=no
 JSCOQ_CI=no
-WRITE_CONFIG=no
 
-if [ -e config.inc ] ; then . config.inc
-else WRITE_CONFIG=yes ; fi
-
-if [ $# -eq 0 ] ; then
-  # require an argument
-  # echo "no argument provided."
-  # echo "usage : $(basename $0) {--32 | -- 64 | --ci | --local}";
-  # exit
-
-  # --32 as default
-  WORD_SIZE=32; WRITE_CONFIG=yes; switch_name=jscoq+32bit
-fi
-
+# Process argument
 for i in "$@"; do
   case $i in
-    --32) WORD_SIZE=32; WRITE_CONFIG=yes; switch_name=jscoq+32bit;;
-    --64) WORD_SIZE=64; WRITE_CONFIG=yes; switch_name=jscoq+64bit;;
-    --ci) WRITE_CONFIG=yes; JSCOQ_CI=yes;;
-    --local) WRITE_CONFIG=yes; switch_name=.;;
+    --32) WORD_SIZE=32 ;;
+    --64) WORD_SIZE=64 ;;
+    --ci) JSCOQ_CI=yes ;;
+    --local) JSCOQ_LOCAL=yes ;;
     *)    echo "unknown option '$i'."; exit ;;
   esac
 done
 
+# Build switch name
+if [ "$JSCOQ_LOCAL" = "yes" ] ; then
+  switch_name=.
+else
+  switch_name=jscoq+"$WORD_SIZE"bit
+fi
+
 create_switch() {
 
   case $WORD_SIZE in
-    32) packages="ocaml-variants.$OCAML_VER+options,ocaml-option-32bit";;
+    32) packages="ocaml-variants.$OCAML_VER+options,ocaml-option-32bit" ;;
     64) packages=ocaml-base-compiler.$OCAML_VER ;;
   esac
 
   # In CI _opam is setup by setup-ocaml action
-  if [[ $JSCOQ_CI == 'no' ]]
+  if [ "$JSCOQ_CI" = "no" ] ;
   then
       opam switch -j $NJOBS create $switch_name --packages=$packages -y
       opam switch $switch_name || exit
@@ -61,7 +56,7 @@ create_switch() {
 
 install_deps() {
 
-  if [[ $JSCOQ_CI == 'no' ]]
+  if [ "$JSCOQ_CI" = "no" ] ;
   then
       opam update
       opam pin add -y -n --kind=path jscoq .
@@ -70,7 +65,7 @@ install_deps() {
   # Setup-ocaml action does perform the pinning
   opam install -y --deps-only $VERB -j $NJOBS jscoq
 
-  if [[ $JSCOQ_CI == 'no' ]]
+  if [ "$JSCOQ_CI" = "no" ] ;
   then
       opam pin remove jscoq
   fi
@@ -91,7 +86,8 @@ post_install() {
 
 }
 
-if [ $WRITE_CONFIG == yes ] ; then echo -e "WORD_SIZE=$WORD_SIZE\nSWITCH_NAME=$switch_name" > config.inc ; fi
+# Write config
+echo -e "WORD_SIZE=$WORD_SIZE\nSWITCH_NAME=$switch_name" > config.inc ;
 
 create_switch
 install_deps

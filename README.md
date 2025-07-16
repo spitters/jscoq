@@ -33,7 +33,7 @@ more information.
 
 The current _development version_ is jsCoq 1.99.1, targeting Coq 8.17
 to Coq 8.21. The current development version is based on the new
-[Flèche](https:://github.com/ejgallego/coq-lsp) document manager and
+[Flèche](https://github.com/ejgallego/coq-lsp) document manager and
 has significant changes. If you are interested in helping with this
 effort, please get in touch with us.
 
