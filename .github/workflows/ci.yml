@@ -119,6 +119,7 @@ jobs:
   docker:
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      REPOS_URL: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -139,6 +140,8 @@ jobs:
           target: jscoq-addons
           push: false
           tags: jscoq/jscoq:latest
-          build-args: BRANCH=${{ env.BRANCH_NAME }}
+          build-args: |
+            BRANCH=${{ env.BRANCH_NAME }}
+            JSCOQ_REPO=https://github.com/${{ env.REPOS_URL }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
