@@ -1,8 +1,4 @@
-# Base branch, used for addons
-ARG BASE_BRANCH=v8.20
-# jsCoq branch, to be overriden for example in PRs
-ARG BRANCH=v8.20
-
+# Standard arguments
 ARG WORDSIZE=32
 ARG SWITCH=jscoq+${WORDSIZE}bit
 
@@ -60,13 +56,13 @@ ARG SWITCH
 ARG WORDSIZE
 RUN if [ ${WORDSIZE} != 32 ] ; then opam switch create ${SWITCH} 4.12.0 ; fi
 RUN if [ ${WORDSIZE} = 32 ] ;  then opam switch create ${SWITCH} --packages="ocaml-variants.4.12.0+options,ocaml-option-32bit" ; fi
-ARG BRANCH
 
+# jsCoq branch, to be overriden for example in PRs
+ARG BRANCH=v8.20
 ARG JSCOQ_REPO=https://github.com/jscoq/jscoq
-ARG JSCOQ_BRANCH=${BRANCH}
 
 WORKDIR /root
-RUN git clone --recursive -b ${JSCOQ_BRANCH} ${JSCOQ_REPO}
+RUN git clone --recursive -b ${BRANCH} ${JSCOQ_REPO}
 
 WORKDIR jscoq
 RUN ./etc/toolchain-setup.sh --${WORDSIZE}
@@ -78,11 +74,8 @@ RUN opam list
 # -----------
 FROM jscoq-base AS jscoq
 
-ARG SUB_BRANCH
 ARG NJOBS=4
 
-RUN git pull --ff-only
-RUN if [ _${SUB_BRANCH} != _ ] ; then git checkout ${SUB_BRANCH} && git pull --ff-only ; fi
 RUN eval $(opam env) && make coq
 RUN export JSCOQ_BUNDLE_TARGET=release
 RUN eval $(opam env) && make jscoq
@@ -101,12 +94,11 @@ FROM jscoq AS jscoq-addons
 RUN eval $(opam env) && make install &&   \
     cd _build/jscoq+* && npm link
 
-ARG BASE_BRANCH
-ARG BRANCH
+# Base branch, used for addons
 ARG WORDSIZE
 ARG SWITCH
 ARG ADDONS_REPO=https://github.com/jscoq/addons
-ARG ADDONS_BRANCH=${BASE_BRANCH}
+ARG ADDONS_BRANCH=v8.20
 
 # - fetch submodules with ssh urls using https instead
 #   (to avoid the need for an ssh key)
@@ -135,12 +127,10 @@ RUN make pack CONTEXT=${SWITCH}
 
 FROM jscoq-addons AS jscoq-inc
 
-ARG SUB_BRANCH
 ARG NJOBS=4
 
 WORKDIR /root/jscoq
 RUN git pull --ff-only
-RUN if [ _${SUB_BRANCH} != _ ] ; then git checkout ${SUB_BRANCH} && git pull --ff-only ; fi
 RUN eval $(opam env) && make jscoq
 
 # - dist tarballs

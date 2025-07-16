@@ -46,6 +46,8 @@
    jsCoq hard to use in non US keyboards layouts, like French or
    Spanish (@helguo, #395 , cc
    https://github.com/ejgallego/CodeMirror-TeX-input/pull/3 )
+ - Have Docker CI use the PR repository when doing CI for a PR CI
+   (@helguo, @ejgallego, cc #321, #)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------
