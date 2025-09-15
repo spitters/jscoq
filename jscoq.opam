@@ -21,6 +21,8 @@ depends: [
   "ppx_import"          { >= "1.11.0"           }
   "lwt_ppx"             { >= "2.0.1"            }
   "result"              { >= "1.5"              }
+  # There is a bug in lwt 5.9.2 for 32bits switches
+  "lwt"                 { != "5.9.2" }
   # We should just rely on OPAM's coq-lsp but this is still early
   "sexplib"             { >= "v0.15.0"          }
   "ppx_sexp_conv"       { >= "v0.15.1" & < "v0.18" }
