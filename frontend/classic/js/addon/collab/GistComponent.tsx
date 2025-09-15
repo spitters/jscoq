@@ -2,9 +2,8 @@ import { Octokit } from "@octokit/core";
 import { useEffect, useState, ChangeEvent } from "react";
 
 interface Gist {
-  setFile(filename: string, content: string): void;
-  getContent(): string;
-  getFilename(): string;
+  setFiles(files: File[]): void;
+  getFiles(): File[];
 }
 
 /**
@@ -14,45 +13,13 @@ interface Gist {
 
 const octokitRead = new Octokit({ auth: "" });
 
-type File = {
+export type File = {
   idx: number;
   filename: string;
   content: string;
 };
 
 const defaultFile: File = { idx: 0, filename: "filename1", content: "" };
-
-type FileProps = {
-  file: File;
-};
-
-function File({ file }: FileProps) {
-  return (
-    <>
-      <div className="file">
-        <h3 className="filename">
-          {file.idx + 1}: {file.filename}
-        </h3>
-        <pre className="file-content">{file.content}</pre>
-      </div>
-    </>
-  );
-}
-
-type FilesProps = {
-  files: File[];
-};
-
-function Files({ files }: FilesProps) {
-  let all_file = files.map((f) => {
-    return <File key={f.idx} file={f} />;
-  });
-  return (
-    <>
-      <div className="file-container">{all_file}</div>
-    </>
-  );
-}
 
 type NotifProps = {
   notif: string;
@@ -74,20 +41,10 @@ function makeErrorMessage(err: any) {
   return "Error " + err.status + " " + err.message;
 }
 
-/**
- * verify fn does not already exist
- */
-function validFilename(files: File[], fn: string) {
-  if (!fn) return false;
-  for (let i = 0; i < files.length; i++)
-    if (files[i].filename === fn) return false;
-  return true;
-}
-
-function filesToOptions(files: File[], idx?: number, content?: string) {
+function filesToOptions(files: File[]) {
   let optionsFiles: { [key: string]: { content: string } } = {};
   files.map((f, i) => {
-    optionsFiles[f.filename] = { content: (i === idx) ? content! : f.content };
+    optionsFiles[f.filename] = { content: f.content };
   });
   return optionsFiles;
 }
@@ -124,9 +81,6 @@ type RequestButtonProps = {
   requestOptions: any;
   onFulfilled: any;
   onRejected: any;
-  files?: File[];
-  setFiles: any;
-  currentIdx: number;
 };
 
 function RequestButton({
@@ -137,9 +91,6 @@ function RequestButton({
   requestOptions,
   onFulfilled,
   onRejected,
-  files,
-  setFiles,
-  currentIdx,
 }: RequestButtonProps) {
   const [isPending, setIsPending]: [boolean, any] = useState(false);
   return (
@@ -147,22 +98,13 @@ function RequestButton({
       disabled={isPending}
       onClick={() => {
         setIsPending(true);
-        if (files)
-          setFiles(
-            files.map((f, i) => {
-              if (i === currentIdx) return { ...f, content: gist.getContent() };
-              return f;
-            })
-          );
         octokit
           .request(
             requestRoute,
-            files
-              ? {
-                  ...requestOptions,
-                  files: filesToOptions(files, currentIdx, gist.getContent()),
-                }
-              : requestOptions
+            {
+              ...requestOptions,
+              files: filesToOptions(gist.getFiles()),
+            }
           )
           .then((res: any) => {
             setIsPending(false);
@@ -179,120 +121,13 @@ function RequestButton({
   );
 }
 
-type TabProps = {
-  filename: string;
-  onClick: any;
-  isCurrentTab: boolean;
-};
-
-function Tab({ filename, onClick, isCurrentTab }: TabProps) {
-  return (
-    <button
-      className={"tab" + (isCurrentTab && " current-tab")}
-      onClick={onClick}
-    >
-      {filename}
-    </button>
-  );
-}
-
-type TabRowProps = {
-  gist: Gist;
-  files: File[];
-  setFiles: any;
-  currentIdx: number;
-  setCurrentIdx: any;
-  setNotif: any;
-};
-
-function TabRow({
-  gist,
-  files,
-  setFiles,
-  currentIdx,
-  setCurrentIdx,
-  setNotif,
-}: TabRowProps) {
-  const [filename, setFilename]: [string, any] = useState("");
-
-  function onTabClick(idx: number) {
-    if (idx !== currentIdx) {
-      setFiles(
-        files.map((f, i) => {
-          if (i === currentIdx) return { ...f, content: gist.getContent() };
-          return f;
-        })
-      );
-      setCurrentIdx(idx);
-      gist.setFile(files[idx].filename, files[idx].content);
-    }
-  }
-
-  function onAddFileClick() {
-    if (validFilename(files, filename)) {
-      setFiles([
-        ...files,
-        { idx: files.length, filename: filename, content: "" },
-      ]);
-      setFilename("");
-    } else {
-      setNotif("invalid filename");
-    }
-  }
-
-  let tabs = files.map((f) => {
-    return (
-      <Tab
-        key={f.idx}
-        filename={f.filename}
-        onClick={() => onTabClick(f.idx)}
-        isCurrentTab={f.idx === currentIdx}
-      />
-    );
-  });
-
-  let inputFilename = (
-    <Input
-      id={"input-fn"}
-      value={filename}
-      onChange={(e: ChangeEvent<HTMLInputElement>) => setFilename(e.target.value.trim())}
-      placeholder={"new file"}
-    />
-  );
-
-  let addFileButton = (
-    <button onClick={() => onAddFileClick()}>Add file</button>
-  );
-
-  return (
-    <>
-      <div className="tabs">
-        {tabs}
-        {inputFilename}
-        {addFileButton}
-      </div>
-    </>
-  );
-}
-
 function buttonsElem(
   gist: Gist,
   gistID: string,
   setGistID: any,
-  files: File[],
-  setFiles: any,
-  showAll: boolean,
-  setShowAll: any,
   octokit: Octokit,
-  currentIdx: number,
   setNotif: any
 ) {
-  let showButton = (
-    <button onClick={() => setShowAll(!showAll)}>
-      {showAll ? "Hide all files" : "Show all files"}
-    </button>
-  );
-
   let linkButton = (
     <a href={"https://gist.github.com/" + gistID} target="_blank">
       <button>Go to Gist</button>
@@ -320,9 +155,6 @@ function buttonsElem(
         console.log(err);
         setNotif(makeErrorMessage(err));
       }}
-      files={files}
-      setFiles={setFiles}
-      currentIdx={currentIdx}
     />
   );
 
@@ -338,25 +170,15 @@ function buttonsElem(
       }}
       onFulfilled={() => {
         setNotif("Updated");
-        setFiles(
-          files.map((f, i) => {
-            if (i === currentIdx) return { ...f, content: gist.getContent() };
-            return f;
-          })
-        );
       }}
       onRejected={(err: any) => {
         console.log(err);
         setNotif(makeErrorMessage(err));
       }}
-      files={files}
-      setFiles={setFiles}
-      currentIdx={currentIdx}
     />
   );
 
   return {
-    show: showButton,
     link: linkButton,
     create: createButton,
     update: updateButton,
@@ -373,35 +195,24 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     ""
   );
   const octokitWrite = new Octokit({ auth: token });
-  const [showAll, setShowAll]: [boolean, any] = useState(false);
   const [gistID, setGistID]: [string, any] = useState(startGistID ?? "");
-  const [files, setFiles]: [File[], any] = useState([defaultFile]);
-  const [currentIdx, setCurrentIdx]: [number, any] = useState(0);
   const [notif, setNotif]: [string, any] = useState("");
 
   useEffect(() => {
-    if (gistID === "") {
-      setCurrentIdx(0);
-      setFiles([defaultFile]);
-      if (gist) gist.setFile(defaultFile.filename, defaultFile.content);
-    } else {
+    if (gistID) {
       octokitRead
         .request("GET /gists/" + gistID, {
           gist_id: gistID,
-          headers: { "X-GitHub-Api-Version": "2022-11-28" },
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28"
+          },
         })
         .then((result) => {
           let rawFiles = result.data.files;
-          setCurrentIdx(0);
-          setFiles(
-            Object.keys(rawFiles).map((f, i) => {
+          let files = Object.keys(rawFiles).map((f, i) => {
               return { idx: i, filename: f, content: rawFiles[f].content };
-            })
-          );
-          if (Object.keys(rawFiles).length > 0) {
-            let fn = Object.keys(rawFiles)[0];
-            gist.setFile(fn, rawFiles[fn].content);
-          }
+          });
+          gist.setFiles(files);
           /* @ts-ignore */
           const url = new URL(location);
           url.searchParams.set("gist", gistID);
@@ -410,8 +221,6 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
         .catch((err) => {
           console.log(err);
           setNotif(makeErrorMessage(err));
-          setFiles([]);
-          gist.setFile(defaultFile.filename, "");
         });
     }
   }, [gistID]);
@@ -420,16 +229,9 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     gist,
     gistID,
     setGistID,
-    files,
-    setFiles,
-    showAll,
-    setShowAll,
     octokitWrite,
-    currentIdx,
     setNotif
   );
-
-  let allFiles = <Files files={files} />;
 
   return (
     <>
@@ -445,7 +247,6 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
               placeholder={"gist id"}
             />
             {allButtons.link}
-            {allButtons.show}
           </div>
           <div>
             <Input
@@ -460,15 +261,6 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
             {allButtons.update}
           </div>
         </div>
-        {showAll && allFiles /* Debug */}
-        <TabRow
-          gist={gist}
-          files={files}
-          setFiles={setFiles}
-          currentIdx={currentIdx}
-          setCurrentIdx={setCurrentIdx}
-          setNotif={setNotif}
-        />
       </div>
     </>
   );

@@ -13,6 +13,7 @@ import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
 import { ICoqEditor, editorAppend } from './coq-editor';
 import { CoqManager, ManagerOptions } from './coq-manager';
+import { CoqDocument } from './coq-document';
 
 function diagNew(d : Diagnostic) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
@@ -62,17 +63,23 @@ let coqDiags = new Plugin<DecorationSet>({
 export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
+    doc : CoqDocument;
+    container : HTMLDivElement;
+
     // eId must be a textarea
-    constructor(eIds, options: ManagerOptions, onChange, onCursorUpdated, manager: CoqManager) {
+    constructor(eIds, options: ManagerOptions, onChange, onCursorUpdated, manager: CoqManager, doc: CoqDocument) {
 
         let { container, area } = editorAppend(eIds[0]);
 
-        var doc = defaultMarkdownParser.parse(area.value);
+        // var doc = defaultMarkdownParser.parse(area.value);
+        if (area.value)
+            doc.update(area.value);
+        var docNode = defaultMarkdownParser.parse(doc.getValue());
 
         this.view =
             new EditorView(container, {
                 state: EditorState.create({
-                    doc: doc || undefined,
+                    doc: docNode || undefined,
                     plugins: [...exampleSetup({schema: schema}), coqDiags]
                 }),
                 // We update the text area
@@ -95,6 +102,9 @@ export class CoqProseMirror implements ICoqEditor {
             });
 
         this.view.focus();
+
+        this.container = container;
+        this.doc = doc;
     }
 
     static serializeDoc(doc) {
@@ -132,6 +142,16 @@ export class CoqProseMirror implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
+
+    show() {
+        this.container.style.display = "";
+    }
+    hide() {
+        this.container.style.display = "none";
+    }
+    closeFile(file: File): void {
+        this.container.remove();
+    }
 
     static process_node(acc) {
         return (node, pos, parent, index) => {

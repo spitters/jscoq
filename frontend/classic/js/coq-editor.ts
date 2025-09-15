@@ -5,6 +5,7 @@
  * Copyright (C) 2019-2023 Emilio J. Gallego Arias, Inria, Paris
  */
 import { Diagnostic } from "../../../backend";
+import { CoqDocument } from "./coq-document";
 import { CoqManager, ManagerOptions } from "./coq-manager";
 
 /**
@@ -18,6 +19,12 @@ export interface ICoqEditor {
     configure(opts: any) : void
     openFile(file: File) : void
     focus() : void
+
+    doc: CoqDocument
+    show() : void;
+    hide() : void;
+    closeFile(file: File) : void;
+    // isVisible : boolean;
 }
 
 // Would be great to use, but not enough typing so far...
@@ -26,7 +33,8 @@ export interface ICoqEditorConstructor {
         options: ManagerOptions,
         onChange: (newContent : string) => void,
         onCursorUpdated: (offset : number) => void,
-        manager: CoqManager) : ICoqEditor;
+        manager: CoqManager,
+        doc : CoqDocument) : ICoqEditor;
 }
 
 /**

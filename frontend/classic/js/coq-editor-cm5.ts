@@ -6,6 +6,7 @@ import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
 import { CoqManager, ManagerOptions } from './coq-manager';
 import { ICoqEditor } from './coq-editor';
+import { CoqDocument } from './coq-document';
 
 interface CM5Options {
     mode?: { "company-coq": boolean }
@@ -17,10 +18,13 @@ interface CM5Options {
 /** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
-    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager) {
+    doc : CoqDocument;
 
-        super(eIds, options, manager);
+    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager, doc : CoqDocument) {
 
+        super(eIds, options, manager, doc);
+        this.doc = doc;
+        
         this.onChangeAny = () => {
             let txt = this.getValue();
             onChange(txt);
@@ -66,5 +70,21 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
     getCursorOffset(): number {
         return this.snippets[0].getCursorOffset();
+    }
+
+    show() {
+        for (let index = 0; index < this.snippets.length; index++) {
+            this.snippets[index].show();
+        }
+    }
+    hide() {
+        for (let index = 0; index < this.snippets.length; index++) {
+            this.snippets[index].hide();
+        }
+    }
+    closeFile(file: File): void {
+        this.snippets.map((p, i) => {
+            p.close();
+        })
     }
 }

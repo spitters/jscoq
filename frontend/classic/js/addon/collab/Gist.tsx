@@ -1,15 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import GistComponent from "./GistComponent";
+import GistComponent, {File} from "./GistComponent";
 import "./gist.css";
+import { CoqManager } from "../../coq-manager";
+import { CoqGistDocument } from "./coq-gist-document";
 
 export class Gist {
-  editor: any;
-  filename: string;
+  coq: CoqManager;
 
-  withCoqManager(coq: any) {
-    this.editor = coq.editor.snippets[0]; // ***TODO
+  withCoqManager(coq: CoqManager) {
+    this.coq = coq;
     return this;
   }
 
@@ -29,16 +30,27 @@ export class Gist {
     );
   }
 
-  setFile(filename: string, content: string) {
-    this.filename = filename;
-    this.editor.load(content, this.filename);
+  setFile({idx, filename, content}: File) {
+    const newDoc = new CoqGistDocument(content, filename);
+    this.coq.createEditor(newDoc);
   }
 
-  getContent() {
-    return this.editor.editor.getValue();
+  setFiles(files: File[]) {
+    for (let i = this.coq.editors.length - 1; i >= 0; i--)
+      this.coq.closeEditor(i);
+    this.coq.current_editor = 0;
+    for (let index = 0; index < files.length; index++) {
+      this.setFile(files[index]);
+    }
   }
 
-  getFilename() {
-    return this.filename;
+  getFiles(): File[] {
+    // ***TODO better access to docs / editors
+    let files: File[] = [];
+    for (let index = 0; index < this.coq.editors.length; index++) {
+      const editor = this.coq.editors[index];
+      files.push({idx: index, filename: editor.doc.getFilename(), content: editor.getValue()});
+    }
+    return files;
   }
 }
