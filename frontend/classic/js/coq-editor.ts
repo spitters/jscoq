@@ -23,24 +23,31 @@ export interface ICoqEditor {
     doc: CoqDocument
     show() : void;
     hide() : void;
-    closeFile(file: File) : void;
+    close() : void;
     // isVisible : boolean;
 }
 
 // Would be great to use, but not enough typing so far...
-export interface ICoqEditorConstructor {
+/* export interface ICoqEditorConstructor {
     new(elems : (string | HTMLElement)[],
         options: ManagerOptions,
         onChange: (newContent : string) => void,
         onCursorUpdated: (offset : number) => void,
         manager: CoqManager,
         doc : CoqDocument) : ICoqEditor;
+} */
+
+export interface ICoqEditorConstructor {
+    new(doc : CoqDocument,
+        manager: CoqManager,
+        onChange: (newContent : string) => void,
+        onCursorUpdated: (offset : number) => void) : ICoqEditor;
 }
 
 /**
  * Takes a textArea and will create an empty div to attach an editor to.
  */
-export function editorAppend(eId) : { container : HTMLDivElement, area : HTMLTextAreaElement } {
+/* export */ function editorAppend(eId) : { container : HTMLDivElement, area : HTMLTextAreaElement } {
 
     var area : HTMLTextAreaElement =
         (eId instanceof HTMLTextAreaElement ? eId
@@ -62,4 +69,27 @@ export function editorAppend(eId) : { container : HTMLDivElement, area : HTMLTex
         area.parentElement?.appendChild(container);
     }
     return { container, area };
+}
+
+/**
+ * Create an empty div to attach an editor.
+ */
+export function createEditor() : HTMLDivElement {
+    // Create container for editor
+    const container = document.createElement('div');
+    container.setAttribute('spellCheck', "false");
+    const parent_id = 'editors';
+    let parent = document.getElementById(parent_id);
+    if (!parent) {
+        const wrapper_id = 'ide-wrapper'
+        const wrapper_elem = document.getElementById(wrapper_id);
+        if (!wrapper_elem)
+            throw new Error(`wrapper element '${wrapper_id}' not found`);
+        let p = document.createElement('div');
+        p.setAttribute('id', parent_id);
+        wrapper_elem.appendChild(p);
+        parent = p;
+    }
+    parent.appendChild(container);
+    return container;
 }

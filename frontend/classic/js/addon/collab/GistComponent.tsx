@@ -11,15 +11,13 @@ interface Gist {
  * https://docs.github.com/en/rest/gists/gists?apiVersion=2022-11-28
  */
 
-const octokitRead = new Octokit({ auth: "" });
+const octokitRead = new Octokit();
 
 export type File = {
   idx: number;
   filename: string;
   content: string;
 };
-
-const defaultFile: File = { idx: 0, filename: "filename1", content: "" };
 
 type NotifProps = {
   notif: string;
@@ -203,9 +201,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
       octokitRead
         .request("GET /gists/" + gistID, {
           gist_id: gistID,
-          headers: {
-            "X-GitHub-Api-Version": "2022-11-28"
-          },
+          headers: { "X-GitHub-Api-Version": "2022-11-28" },
         })
         .then((result) => {
           let rawFiles = result.data.files;
@@ -213,7 +209,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
               return { idx: i, filename: f, content: rawFiles[f].content };
           });
           gist.setFiles(files);
-          /* @ts-ignore */
+          // @ts-ignore
           const url = new URL(location);
           url.searchParams.set("gist", gistID);
           history.pushState({}, "", url);

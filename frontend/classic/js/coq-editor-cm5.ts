@@ -20,9 +20,12 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
     doc : CoqDocument;
 
-    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager, doc : CoqDocument) {
+    constructor(doc : CoqDocument,
+                manager: CoqManager,
+                onChange: (newContent : string) => void,
+                onCursorUpdated: (offset : number) => void) {
 
-        super(eIds, options, manager, doc);
+        super([], manager, doc);
         this.doc = doc;
         
         this.onChangeAny = () => {
@@ -30,7 +33,7 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
             onChange(txt);
         };
         this.onCursorUpdate = (cm) => {
-            onCursorUpdate(this.getCursorOffset());
+            onCursorUpdated(this.getCursorOffset());
         }
         // if (this.options.mode && this.options.mode['company-coq']) {
         //     this.company_coq = new CompanyCoq(this.manager);
@@ -77,12 +80,14 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
             this.snippets[index].show();
         }
     }
+
     hide() {
         for (let index = 0; index < this.snippets.length; index++) {
             this.snippets[index].hide();
         }
     }
-    closeFile(file: File): void {
+
+    close() {
         this.snippets.map((p, i) => {
             p.close();
         })

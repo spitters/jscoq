@@ -5,12 +5,15 @@ import GistComponent, {File} from "./GistComponent";
 import "./gist.css";
 import { CoqManager } from "../../coq-manager";
 import { CoqGistDocument } from "./coq-gist-document";
+import { TabManager } from "../../coq-tab-manager";
 
 export class Gist {
   coq: CoqManager;
+  tabs: TabManager;
 
   withCoqManager(coq: CoqManager) {
     this.coq = coq;
+    this.tabs = coq.tab_manager;
     return this;
   }
 
@@ -30,26 +33,28 @@ export class Gist {
     );
   }
 
-  setFile({idx, filename, content}: File) {
+  setFile({ idx, filename, content }: File) {
     const newDoc = new CoqGistDocument(content, filename);
-    this.coq.createEditor(newDoc);
+    this.tabs.createTab(newDoc);
   }
 
   setFiles(files: File[]) {
-    for (let i = this.coq.editors.length - 1; i >= 0; i--)
-      this.coq.closeEditor(i);
-    this.coq.current_editor = 0;
+    this.tabs.closeAll();
     for (let index = 0; index < files.length; index++) {
       this.setFile(files[index]);
     }
+    if (files.length === 0) {
+      this.setFile({ idx: 0, filename: "gistfile1.txt", content: ""});
+    }
+    this.tabs.current_tab = this.tabs.tabs[0];
   }
 
   getFiles(): File[] {
-    // ***TODO better access to docs / editors
+    // ***TODO better access to docs / editors ?
     let files: File[] = [];
-    for (let index = 0; index < this.coq.editors.length; index++) {
-      const editor = this.coq.editors[index];
-      files.push({idx: index, filename: editor.doc.getFilename(), content: editor.getValue()});
+    for (let index = 0; index < this.tabs.tabs.length; index++) {
+      const tab = this.tabs.tabs[index];
+      files.push({idx: index, filename: tab.doc.getFilename(), content: tab.editor.getValue()});
     }
     return files;
   }

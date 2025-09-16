@@ -272,12 +272,15 @@ export class CmCoqProvider {
     show() {
         this.editor.getWrapperElement().removeAttribute('style');
     }
+
     hide() {
         this.editor.getWrapperElement().setAttribute('style', 'display: none;');
     }
+
     close() {
         this.editor.getWrapperElement().remove();
     }
+    
     // ----------------------------------
     // CoqEditor interface implementation
 

@@ -20,12 +20,16 @@
   <div id="gist-root">
     <!-- input & buttons for gist -->
   </div>
-  <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
-    <!-- Editor and panel are created here by CoqManager -->
-    <div id="tabs" style="display: flex; flex-direction: column; max-width: max-content;">
+  <div style="display: flex; flex-direction: row;">
+    <div id="tabs" style="display: flex; flex-direction: column;">
       <!-- file tabs -->
     </div>
-    <textarea id="coqCode"></textarea>
+    <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
+      <!-- Editor and panel are created here by CoqManager -->
+      <div id="editors">
+        <!-- editors created by CoqEditor -->
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -53,7 +57,6 @@
     var filename_key  = 'scratchpad.last_filename', // key in localStorage to get filename
         default_fn    = 'playground',
         wrapper_id    = 'ide-wrapper',
-        jscoq_ids     = ['coqCode'],
         attr_filename = 'data-filename';
     var last_filename = localStorage.getItem(filename_key),
         wrapper_elem  = document.getElementById(wrapper_id)
@@ -66,7 +69,7 @@
     else if (sp.has('fn'))  set_filename(sp.get('fn'));
     else if (last_filename) set_filename(last_filename);
 
-    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
+    JsCoq.start(jscoq_opts).then(res => {
       coq = res;
       window.coq = coq;
       if (sp.has('project'))     coq.openProject(sp.get('project'));

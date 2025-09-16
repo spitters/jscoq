@@ -11,7 +11,7 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
-import { ICoqEditor, editorAppend } from './coq-editor';
+import { ICoqEditor, createEditor } from './coq-editor';
 import { CoqManager, ManagerOptions } from './coq-manager';
 import { CoqDocument } from './coq-document';
 
@@ -66,18 +66,17 @@ export class CoqProseMirror implements ICoqEditor {
     doc : CoqDocument;
     container : HTMLDivElement;
 
-    // eId must be a textarea
-    constructor(eIds, options: ManagerOptions, onChange, onCursorUpdated, manager: CoqManager, doc: CoqDocument) {
+    constructor(doc : CoqDocument,
+                manager: CoqManager,
+                onChange: (newContent : string) => void,
+                onCursorUpdated: (offset : number) => void) {
 
-        let { container, area } = editorAppend(eIds[0]);
-
-        // var doc = defaultMarkdownParser.parse(area.value);
-        if (area.value)
-            doc.update(area.value);
+        this.doc = doc;
+        this.container = createEditor();
         var docNode = defaultMarkdownParser.parse(doc.getValue());
 
         this.view =
-            new EditorView(container, {
+            new EditorView(this.container, {
                 state: EditorState.create({
                     doc: docNode || undefined,
                     plugins: [...exampleSetup({schema: schema}), coqDiags]
@@ -89,7 +88,7 @@ export class CoqProseMirror implements ICoqEditor {
                         let newDoc = CoqProseMirror.serializeDoc(tr.doc);
                         onChange(newDoc);
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
-                        area.value = newMarkdown;
+                        doc.update(newMarkdown);
                     }
                     const { state } = this.state.applyTransaction(tr);
 
@@ -102,9 +101,6 @@ export class CoqProseMirror implements ICoqEditor {
             });
 
         this.view.focus();
-
-        this.container = container;
-        this.doc = doc;
     }
 
     static serializeDoc(doc) {
@@ -146,10 +142,12 @@ export class CoqProseMirror implements ICoqEditor {
     show() {
         this.container.style.display = "";
     }
+
     hide() {
         this.container.style.display = "none";
     }
-    closeFile(file: File): void {
+    
+    close() {
         this.container.remove();
     }
 

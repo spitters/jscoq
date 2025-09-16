@@ -27,9 +27,9 @@ export class ProviderContainer {
     /**
      * Creates an instance of ProviderContainer.
      */
-    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions, manager : CoqManager, doc : CoqDocument) {
+    constructor(elementRefs : (string | HTMLElement)[], manager : CoqManager, doc : CoqDocument) {
 
-        this.options = options;
+        this.options = manager.options;
 
         /**
          * @name ProviderContainer#snippets

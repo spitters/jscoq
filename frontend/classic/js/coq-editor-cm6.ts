@@ -2,7 +2,7 @@
 import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirror/state";
 import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 import { Diagnostic } from "../../../backend/coq-worker";
-import { ICoqEditor, editorAppend } from "./coq-editor";
+import { ICoqEditor, createEditor } from "./coq-editor";
 import { CoqDocument } from "./coq-document";
 import { CoqManager } from "./coq-manager";
 
@@ -43,12 +43,12 @@ export class CoqCodeMirror6 implements ICoqEditor {
     doc : CoqDocument;
     container : HTMLDivElement;
 
-    // element e
-    constructor(eIds : string[], options, onChange, onCursorUpdated, manager : CoqManager, doc : CoqDocument) {
-        if (eIds.length != 1)
-            throw new Error('not implemented: `cm6` frontend requires a single element')
-
-        let { container, area }  = editorAppend(eIds[0]);
+    constructor(doc : CoqDocument,
+                manager: CoqManager,
+                onChange: (newContent : string) => void,
+                onCursorUpdated: (offset : number) => void) {
+        this.doc = doc;
+        this.container = createEditor();
 
         var extensions =
             [ diagField,
@@ -60,24 +60,17 @@ export class CoqCodeMirror6 implements ICoqEditor {
                   if (v.docChanged) {
                       // Document changed
                       var newText = v.state.doc.toString();
-                      area.value = newText;
+                      doc.update(newText);
                       onChange(newText);
                   }})
             ];
-
-        // var state = EditorState.create( { doc: area.value, extensions } );
-        if (area.value)
-            doc.update(area.value);
         var state = EditorState.create( { doc: doc.getValue(), extensions } );
 
         this.view = new EditorView(
             { state,
-              parent: container,
+              parent: this.container,
               extensions
             });
-
-        this.container = container;
-        this.doc = doc;
     }
 
     getValue() {
@@ -120,10 +113,12 @@ export class CoqCodeMirror6 implements ICoqEditor {
     show() {
         this.container.style.display = "";
     }
+
     hide() {
         this.container.style.display = "none";
     }
-    closeFile(file: File): void {
+
+    close() {
         this.container.remove();
     }
 }

@@ -1,4 +1,8 @@
 
+export interface ICoqDocumentConstructor {
+    new(content: string, filename: string);
+}
+
 export class CoqDocument {
     uri : string;
     version : number;
@@ -17,6 +21,8 @@ export class CoqDocument {
     constructor(content: string, filename: string) {
         this.content = content;
         this.filename = filename;
+        this.content_type = 'markdown'; // ***TODO doc options ?
+        this.version = 0;
     }
 
     create(/*  */) {
@@ -24,6 +30,7 @@ export class CoqDocument {
     }
 
     update(value: string) {
+        this.version++;
         this.content = value;
     }
 
@@ -42,5 +49,4 @@ export class CoqDocument {
     getContentType() {
         return this.content_type;
     }
-
 }
