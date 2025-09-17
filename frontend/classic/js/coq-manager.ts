@@ -79,6 +79,7 @@ export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
     tab_manager : TabManager;
+    eIds: string[];
     uri : string;
     version : number;
     layout : CoqLayoutClassic;
@@ -160,6 +161,7 @@ export class CoqManager {
             if (!onChange.pending) this.setGoalCursor(offset);
         }, 200);
 
+        this.eIds = elems;
         this.tab_manager = new TabManager(this, onChange, onCursorUpdated, elems);
         if (this.options.multiple_editors) this.tab_manager.addFileTab();
 

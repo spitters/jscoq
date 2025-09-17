@@ -25,8 +25,11 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
                 onChange: (newContent : string) => void,
                 onCursorUpdated: (offset : number) => void) {
 
-        super([], manager, doc);
+        super(manager.eIds, manager, doc);
+        
         this.doc = doc;
+        if (this.getValue())
+            this.doc.update(this.getValue());
         
         this.onChangeAny = () => {
             let txt = this.getValue();
@@ -76,19 +79,19 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
     }
 
     show() {
-        for (let index = 0; index < this.snippets.length; index++) {
-            this.snippets[index].show();
-        }
+        this.snippets.map((p) => {
+            p.show();
+        })
     }
 
     hide() {
-        for (let index = 0; index < this.snippets.length; index++) {
-            this.snippets[index].hide();
-        }
+        this.snippets.map((p) => {
+            p.hide();
+        })
     }
 
     close() {
-        this.snippets.map((p, i) => {
+        this.snippets.map((p) => {
             p.close();
         })
     }

@@ -69,7 +69,7 @@
     else if (sp.has('fn'))  set_filename(sp.get('fn'));
     else if (last_filename) set_filename(last_filename);
 
-    JsCoq.start(jscoq_opts).then(res => {
+    JsCoq.start(['editors'], jscoq_opts).then(res => {
       coq = res;
       window.coq = coq;
       if (sp.has('project'))     coq.openProject(sp.get('project'));

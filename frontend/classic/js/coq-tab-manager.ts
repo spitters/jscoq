@@ -19,12 +19,24 @@ export class TabManager {
         this.tabs = [];
         this.onChange = onChange;
         this.onCursorUpdated = onCursorUpdated;
-        for (const eId of elems) {
+
+        // from textarea
+        // 1 doc per textarea
+        /* for (const eId of elems) {
             const doc = this.processElem(eId);
             if (doc) {
                 this.createTab(doc);
             }
+        } */
+        // 1 doc for all texarea
+        const CoqDocument = this.manager.getDocumentConstructor();
+        let values: string[] = elems.map((e) => this.getElemValue(e));
+        values = values.filter((v) => v !== null);
+        if (values.length) {
+            const doc = new CoqDocument(values.join('\n'), "fromTextarea");
+            this.current_tab = this.createTab(doc);
         }
+        // if no textarea
         if (this.tabs.length > 0) {
             this.current_tab = this.tabs[0];
         } else {
@@ -45,6 +57,19 @@ export class TabManager {
         area.style.display = 'none';
         const CoqDocument = this.manager.getDocumentConstructor();
         return new CoqDocument(area.value, eId); // ***TODO filename;
+    }
+
+    getElemValue(eId: string): string {
+        var area : HTMLTextAreaElement = document.getElementById(eId) as HTMLTextAreaElement;
+        if (! (area instanceof HTMLTextAreaElement)) {
+            // ***TODO 'ide-wrapper' (default value for elems) + 'editors' for cm5 editor HTMLElement 
+            if (eId === 'ide-wrapper' || eId === 'editors') return null;
+            throw new Error(`not implemented: '${eId}' must be a textarea`);
+            // console.error(`not implemented: '${eId}' must be a textarea`);
+            // return null;
+        }
+        area.style.display = 'none';
+        return area.value;
     }
 
     createTab(doc: CoqDocument) {
