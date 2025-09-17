@@ -79,7 +79,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager);
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager, doc);
 
                 this.snippets.push(cm);
 

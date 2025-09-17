@@ -21,9 +21,6 @@ export interface ICoqEditor {
     focus() : void
 
     doc: CoqDocument
-    show() : void;
-    hide() : void;
-    close() : void;
     // isVisible : boolean;
 }
 
@@ -40,6 +37,7 @@ export interface ICoqEditor {
 export interface ICoqEditorConstructor {
     new(doc : CoqDocument,
         manager: CoqManager,
+        container: HTMLDivElement,
         onChange: (newContent : string) => void,
         onCursorUpdated: (offset : number) => void) : ICoqEditor;
 }
@@ -74,7 +72,7 @@ export interface ICoqEditorConstructor {
 /**
  * Create an empty div to attach an editor.
  */
-export function createEditor() : HTMLDivElement {
+export function createEditorContainer() : HTMLDivElement {
     // Create container for editor
     const container = document.createElement('div');
     container.setAttribute('spellCheck', "false");

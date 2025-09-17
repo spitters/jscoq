@@ -4,7 +4,6 @@ import ReactDOM from "react-dom/client";
 import GistComponent, {File} from "./GistComponent";
 import "./gist.css";
 import { CoqManager } from "../../coq-manager";
-import { CoqGistDocument } from "./coq-gist-document";
 import { TabManager } from "../../coq-tab-manager";
 
 export class Gist {
@@ -33,28 +32,26 @@ export class Gist {
     );
   }
 
-  setFile({ idx, filename, content }: File) {
-    const newDoc = new CoqGistDocument(content, filename);
-    this.tabs.createTab(newDoc);
+  setFile({ filename, content }: File) {
+    this.coq.createDocument(content, filename);
   }
 
   setFiles(files: File[]) {
-    this.tabs.closeAll();
+    this.coq.deleteAllDocuments();
     for (let index = 0; index < files.length; index++) {
       this.setFile(files[index]);
     }
     if (files.length === 0) {
-      this.setFile({ idx: 0, filename: "gistfile1.txt", content: ""});
+      this.setFile({ filename: "gistfile1.txt", content: ""});
     }
-    this.tabs.current_tab = this.tabs.tabs[0];
+    this.tabs.current_tab = this.tabs.createTab(this.coq.documents[0]);
   }
 
   getFiles(): File[] {
     // ***TODO better access to docs / editors ?
     let files: File[] = [];
-    for (let index = 0; index < this.tabs.tabs.length; index++) {
-      const tab = this.tabs.tabs[index];
-      files.push({idx: index, filename: tab.doc.getFilename(), content: tab.editor.getValue()});
+    for (const doc of this.coq.documents) {
+      files.push({filename: doc.getFilename(), content: doc.getValue()});
     }
     return files;
   }

@@ -41,34 +41,3 @@ div#notif {
 #input-id, #input-token {
   min-width: 300px;
 }
-
-#input-fn {
-  width: 100px;
-}
-
-.file-container {
-  background-color: rgb(230, 230, 230);
-}
-
-.file {
-  border: 1px solid rgb(155, 155, 155);
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.filename {
-  background-color: rgb(250, 230, 200);
-}
-
-.file-content {
-  background-color: rgb(255, 255, 200);
-}
-
-.tabs {
-  display: flex;
-  flex-direction: row;
-}
-
-.current-tab {
-  background-color: cornsilk;
-}

@@ -140,7 +140,7 @@ export class CmCoqProvider {
      * @param {number} idx index of this snippet within a ProviderContainer
      * @memberof CmCoqProvider
      */
-    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager : CoqManager) {
+    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager : CoqManager, doc: CoqDocument) {
 
         this.options = options;
         this.idx = idx;
@@ -177,6 +177,9 @@ export class CmCoqProvider {
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
+
+        if (!this.editor.getValue())
+            this.editor.setValue(doc.getValue());
 
         if (replace) this.editor.addKeyMap('jscoq-snippet');
 

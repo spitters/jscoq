@@ -33,7 +33,7 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // Addons
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
-import { CoqDocument, ICoqDocumentConstructor } from './coq-document';
+import { CoqDocument, ICoqDocumentConstructor, initDocument } from './coq-document';
 import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { TabManager } from './coq-tab-manager';
 
@@ -78,8 +78,8 @@ export interface ManagerOptions {
 export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
+    documents: CoqDocument[];
     tab_manager : TabManager;
-    eIds: string[];
     uri : string;
     version : number;
     layout : CoqLayoutClassic;
@@ -161,9 +161,15 @@ export class CoqManager {
             if (!onChange.pending) this.setGoalCursor(offset);
         }, 200);
 
-        this.eIds = elems;
-        this.tab_manager = new TabManager(this, onChange, onCursorUpdated, elems);
-        if (this.options.multiple_editors) this.tab_manager.addFileTab();
+        this.documents = [];
+        let doc = initDocument(elems, this.getDocumentConstructor(), this.options.content_type);
+        this.documents.push(doc);
+        if (this.options.multiple_editors) {
+            this.addDocumentButton();
+            this.createDocButton(doc);
+        }
+        this.tab_manager = new TabManager(this, onChange, onCursorUpdated);
+        this.tab_manager.current_tab = this.tab_manager.createTab(this.documents[0]);
 
         /* @ts-ignore */
         this.packages = null;
@@ -227,7 +233,7 @@ export class CoqManager {
     }
 
     // Setup Coq document
-    getDocumentConstructor(): ICoqDocumentConstructor {
+    private getDocumentConstructor(): ICoqDocumentConstructor {
         if (this.collab && this.collab.gist)
             return CoqGistDocument;
         else
@@ -419,6 +425,8 @@ export class CoqManager {
     // Coq document diagnostics.
     async coqNotification( params : PublishDiagnosticParams ) {
         let { uri, version, diagnostic }  = params;
+        // ***TODO get editor with uri
+        const editor = this.tab_manager.current_tab.editor;
 
         console.log("Diags received: " + diagnostic.length.toString());
 
@@ -427,7 +435,7 @@ export class CoqManager {
             return;
         }
 
-        this.tab_manager.current_tab.editor.clearDiagnostics();
+        editor.clearDiagnostics();
 
         let needRecheck = false, pending;
         for (let d of diagnostic.reverse()) {
@@ -435,7 +443,7 @@ export class CoqManager {
                 /** @todo it seems that these are sent more than once */
                 if (extra[0] === 'FailedRequire' &&
                         (pending = this.handleRequires(extra))) {
-                    this.tab_manager.current_tab.editor.markDiagnostic(d);
+                    editor.markDiagnostic(d);
 
                     needRecheck = true;
                     await pending;
@@ -443,7 +451,7 @@ export class CoqManager {
                 }
             }
             if (d.severity < 4 && !needRecheck) {
-                this.tab_manager.current_tab.editor.markDiagnostic(d);
+                editor.markDiagnostic(d);
             }
         }
 
@@ -805,6 +813,61 @@ export class CoqManager {
         if (!this.collab) await this.openCollab();
         this.collab.gist.saveUpdate();
     } */
+
+    createDocument(content: string, filename: string) {
+        const CoqDocument = this.getDocumentConstructor();
+        const doc = new CoqDocument(content, filename);
+        this.documents.push(doc);
+        if (this.options.multiple_editors)
+            this.createDocButton(doc);
+    }
+
+    private createDocButton(doc: CoqDocument) {
+        const parent = document.getElementById('documents');
+        let button = document.createElement('button');
+        button.classList.add('docButton');
+        button.addEventListener('click', (ev: MouseEvent) => {
+            this.tab_manager.createTab(doc);
+        });
+        button.innerText = doc.getFilename();
+        parent.appendChild(button);
+        doc.entryButton = button;
+    }
+
+    addDocumentButton() {
+        const parent_id = 'documents';
+        let parent = document.getElementById(parent_id);
+        if (!parent) {
+            const wrapper_id = 'ide-wrapper'
+            const wrapper_elem = document.getElementById(wrapper_id);
+            if (!wrapper_elem)
+                throw new Error(`wrapper element '${wrapper_id}' not found`);
+            let p = document.createElement('div');
+            p.setAttribute('id', parent_id);
+            p.setAttribute('style', 'display: flex; flex-direction: column;');
+            if (wrapper_elem.parentElement)
+                wrapper_elem.parentElement.parentElement.insertBefore(p, wrapper_elem.parentElement);
+            else
+                wrapper_elem.parentElement.insertBefore(p, wrapper_elem);
+            parent = p;
+        }
+        let tab = document.createElement('button');
+        let onClick = ((ev: MouseEvent) => {
+            const n = this.documents.length + 1;
+            const filename = "untitled" + n + ((this.options.content_type === 'plain') ? '.v' : '.mv');
+            this.createDocument("", filename);
+        });
+        tab.addEventListener('click', onClick);
+        tab.innerText = 'Add document';
+        parent.insertBefore(tab, parent.firstChild);
+    }
+
+    deleteAllDocuments() {
+        for (const doc of this.documents)
+            doc.delete();
+        this.documents.splice(0);
+        this.tab_manager.closeAll();
+    }
 
     // Aux function for goals2DOM
     flatLength(l) {

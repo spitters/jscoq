@@ -14,7 +14,6 @@ interface Gist {
 const octokitRead = new Octokit();
 
 export type File = {
-  idx: number;
   filename: string;
   content: string;
 };

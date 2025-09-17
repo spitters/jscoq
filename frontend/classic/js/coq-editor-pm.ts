@@ -11,7 +11,7 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
-import { ICoqEditor, createEditor } from './coq-editor';
+import { ICoqEditor } from './coq-editor';
 import { CoqManager, ManagerOptions } from './coq-manager';
 import { CoqDocument } from './coq-document';
 
@@ -64,19 +64,18 @@ export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
     doc : CoqDocument;
-    container : HTMLDivElement;
 
     constructor(doc : CoqDocument,
                 manager: CoqManager,
+                container: HTMLDivElement,
                 onChange: (newContent : string) => void,
                 onCursorUpdated: (offset : number) => void) {
 
         this.doc = doc;
-        this.container = createEditor();
         var docNode = defaultMarkdownParser.parse(doc.getValue());
 
         this.view =
-            new EditorView(this.container, {
+            new EditorView(container, {
                 state: EditorState.create({
                     doc: docNode || undefined,
                     plugins: [...exampleSetup({schema: schema}), coqDiags]
@@ -138,18 +137,6 @@ export class CoqProseMirror implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
-
-    show() {
-        this.container.style.display = "";
-    }
-
-    hide() {
-        this.container.style.display = "none";
-    }
-    
-    close() {
-        this.container.remove();
-    }
 
     static process_node(acc) {
         return (node, pos, parent, index) => {

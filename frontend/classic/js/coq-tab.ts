@@ -1,21 +1,21 @@
 import { CoqDocument } from "./coq-document";
-import { ICoqEditor, ICoqEditorConstructor } from "./coq-editor";
+import { createEditorContainer, ICoqEditor, ICoqEditorConstructor } from "./coq-editor";
 import { CoqManager } from "./coq-manager";
 
 export class CoqTab {
     tab: HTMLButtonElement;
-    doc: CoqDocument;
     editor: ICoqEditor;
+    container: HTMLDivElement;
 
     constructor(doc: CoqDocument,
                 CoqEditor: ICoqEditorConstructor,
                 onChange: (newContent: string) => void,
                 onCursorUpdated: (offset: number) => void,
-                manager: CoqManager) {
-        this.doc = doc;
-        this.editor = new CoqEditor(doc, manager, onChange, onCursorUpdated);
+                manager: CoqManager,
+                parent: HTMLElement) {
+        this.container = createEditorContainer();
+        this.editor = new CoqEditor(doc, manager, this.container, onChange, onCursorUpdated);
         // create tab
-        let parent = document.getElementById('tabs');
         if (!manager.options.multiple_editors) {
             this.tab = null;
         } else {
@@ -37,6 +37,8 @@ export class CoqTab {
             this.tab = tab;
             parent.appendChild(tab);
         }
+        if (doc.entryButton)
+            doc.entryButton.setAttribute("disabled", "true");
     }
 
     addSelectedStyle() {
@@ -50,15 +52,15 @@ export class CoqTab {
     }
 
     show() {
-        this.editor.show();
+        this.container.style.display = '';
     }
 
     hide() {
-        this.editor.hide();
+        this.container.style.display = 'none';
     }
 
     close() {
-        this.editor.close();
+        this.container.remove();
         this.tab.remove();
     }
 }

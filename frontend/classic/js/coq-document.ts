@@ -1,4 +1,3 @@
-
 export interface ICoqDocumentConstructor {
     new(content: string, filename: string);
 }
@@ -9,9 +8,10 @@ export class CoqDocument {
     content_type : 'plain' | 'markdown';
     isDirty : boolean;
 
-    // File?
     filename : string;
     content : string;
+
+    entryButton : HTMLButtonElement;
     
     // isUntitled: boolean;
     // isClosed: boolean;
@@ -25,10 +25,6 @@ export class CoqDocument {
         this.version = 0;
     }
 
-    create(/*  */) {
-        // constructor ?
-    }
-
     update(value: string) {
         this.version++;
         this.content = value;
@@ -36,6 +32,10 @@ export class CoqDocument {
 
     save() {
         //
+    }
+
+    delete() {
+        this.entryButton && this.entryButton.remove();
     }
 
     getFilename() {
@@ -49,4 +49,28 @@ export class CoqDocument {
     getContentType() {
         return this.content_type;
     }
+}
+
+function getElemValue(eId: string): string {
+    var area : HTMLTextAreaElement = document.getElementById(eId) as HTMLTextAreaElement;
+    if (! (area instanceof HTMLTextAreaElement)) {
+        // ***TODO 'ide-wrapper' (default value for elems) + 'editors' for cm5 editor HTMLElement 
+        if (eId === 'ide-wrapper' || eId === 'editors') return null;
+        throw new Error(`not implemented: '${eId}' must be a textarea`);
+        // console.error(`not implemented: '${eId}' must be a textarea`);
+        // return null;
+    }
+    area.style.display = 'none';
+    return area.value;
+}
+
+export function initDocument(eIds: string[], CoqDocument: ICoqDocumentConstructor, content_type: string) {
+    const extension = (content_type === 'plain') ? '.v' : '.mv';
+    // from textarea
+    let values: string[] = (eIds) ? eIds.map((e) => getElemValue(e)) : [];
+    values = values.filter((v) => v !== null);
+    if (values.length) {
+        return new CoqDocument(values.join('\n'), "fromTextarea" + extension);
+    }
+    return new CoqDocument("", "untitled1" + extension);
 }

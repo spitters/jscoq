@@ -17,17 +17,22 @@
   </head>
 
 <body class="jscoq-main">
-  <div id="gist-root">
-    <!-- input & buttons for gist -->
-  </div>
   <div style="display: flex; flex-direction: row;">
-    <div id="tabs" style="display: flex; flex-direction: column;">
-      <!-- file tabs -->
+    <div id="documents" style="display: flex; flex-direction: column;">
+      <!-- documents list -->
     </div>
-    <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
-      <!-- Editor and panel are created here by CoqManager -->
-      <div id="editors">
-        <!-- editors created by CoqEditor -->
+    <div style="display: flex; flex-direction: column;">
+      <div id="gist-root">
+        <!-- input & buttons for gist -->
+      </div>
+      <div id="tabs" style="display: flex; flex-direction: row;">
+        <!-- opened tabs list -->
+      </div>
+      <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
+        <!-- Editor and panel are created here by CoqManager -->
+        <div id="editors">
+          <!-- editors created by CoqEditor -->
+        </div>
       </div>
     </div>
   </div>
@@ -40,6 +45,7 @@
         panel_theme = ifHas('dark') ?? sp.get('theme') ?? 'light',
         editor_theme = sp.get('editor_theme') ?? (panel_theme == 'dark' ? 'blackboard' : 'default');
 
+    var jscoq_ids = ['editors'];
     var jscoq_opts = {
         backend: sp.get('backend') ?? ifHas('wa'),
         frontend: sp.get('frontend') ?? "cm5",
@@ -69,7 +75,7 @@
     else if (sp.has('fn'))  set_filename(sp.get('fn'));
     else if (last_filename) set_filename(last_filename);
 
-    JsCoq.start(['editors'], jscoq_opts).then(res => {
+    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
       coq = res;
       window.coq = coq;
       if (sp.has('project'))     coq.openProject(sp.get('project'));

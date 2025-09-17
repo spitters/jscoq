@@ -2,7 +2,7 @@
 import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirror/state";
 import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 import { Diagnostic } from "../../../backend/coq-worker";
-import { ICoqEditor, createEditor } from "./coq-editor";
+import { ICoqEditor } from "./coq-editor";
 import { CoqDocument } from "./coq-document";
 import { CoqManager } from "./coq-manager";
 
@@ -41,14 +41,13 @@ export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
 
     doc : CoqDocument;
-    container : HTMLDivElement;
 
     constructor(doc : CoqDocument,
                 manager: CoqManager,
+                container: HTMLDivElement,
                 onChange: (newContent : string) => void,
                 onCursorUpdated: (offset : number) => void) {
         this.doc = doc;
-        this.container = createEditor();
 
         var extensions =
             [ diagField,
@@ -68,7 +67,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
 
         this.view = new EditorView(
             { state,
-              parent: this.container,
+              parent: container,
               extensions
             });
     }
@@ -109,18 +108,6 @@ export class CoqCodeMirror6 implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
-
-    show() {
-        this.container.style.display = "";
-    }
-
-    hide() {
-        this.container.style.display = "none";
-    }
-
-    close() {
-        this.container.remove();
-    }
 }
 
 // Local Variables:
