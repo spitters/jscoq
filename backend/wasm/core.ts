@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { unzipSync } from 'fflate';
 import { isBrowser, isWebWorker } from 'browser-or-node';
-import { OCamlExecutable, OCamlCAPI } from './ocaml_exec';
+import { OCamlExecutable, OCamlExecutableOptions, OCamlCAPI } from './ocaml_exec';
 import { WorkerInterrupts } from './interrupt';
 
 class IcoqPod extends EventEmitter {
@@ -19,7 +19,16 @@ class IcoqPod extends EventEmitter {
         this.binDir = binDir;
         this.nmDir = nmDir ?? '../node_modules';
 
-        this.core = new OCamlExecutable({stdin: false, tty: false, binDir: `${nmDir}/ocaml-wasm/bin`});
+        let options : OCamlExecutableOptions = {
+            stdin: false,
+            tty: false,
+            binDir: `${nmDir}/ocaml-wasm/bin`,
+            debug: false,
+            // debug: true,
+            // trace: { syscalls: true}
+        };
+
+        this.core = new OCamlExecutable(options);
 
         var utf8 = new TextDecoder();
         this.core.on('stream:out', ev => console.log(utf8.decode(ev.data)));
@@ -40,9 +49,9 @@ class IcoqPod extends EventEmitter {
         await this.upload(`../backend/wasm/wacoq_worker.bc`, '/lib/icoq.bc');
         await this.findlibStartup(); /* @todo */
 
-        this._preloadStub();
+        await this._preloadStub();
 
-        await this.core.run('/lib/icoq.bc', [], ['wacoq_post']);
+        await this.core.run('/lib/icoq.bc', [], ['wacoq_post', 'wacoq_idle']);
     }
 
     async upload(fromUri: string, toPath: string) {
@@ -68,7 +77,7 @@ class IcoqPod extends EventEmitter {
             }
         }));
 
-        //if (refresh)
+        // if (refresh)
         //    this.command(['RefreshLoadPath']);
 
         this.answer([['LoadedPkg', uris]]);
@@ -109,6 +118,8 @@ class IcoqPod extends EventEmitter {
     }
 
     command(cmd: any[]) {
+        // Don't debug messages
+        // console.log(cmd);
         switch (cmd[0]) {
         case 'LoadPkg':        this.loadPackages(cmd[1]);          return;
         case 'Put':            this.putFile(cmd[1], cmd[2]);       return;
@@ -140,31 +151,21 @@ class IcoqPod extends EventEmitter {
     /**
      * (internal) Initializes the dllcoqrun_stub shared library.
      */
-    _preloadStub() {
-        this.core.proc.dyld.preload(
+    async _preloadStub() {
+        await this.core.proc.dyld.preload(
             'dllzarith.so', `${this.nmDir}/@ocaml-wasm/4.12--zarith/bin/dllzarith.wasm`);
-        this.core.proc.dyld.preload(
+        await this.core.proc.dyld.preload(
             'dllbase_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_stubs.wasm`);
-        this.core.proc.dyld.preload(
+        await this.core.proc.dyld.preload(
             'dllbase_internalhash_types_stubs.so', `${this.nmDir}/@ocaml-wasm/4.12--janestreet-base/bin/dllbase_internalhash_types_stubs.wasm`);
-        this.core.proc.dyld.preload(
+        await this.core.proc.dyld.preload(
             'dllcoqrun_stubs.so', `${this.binDir}/dllcoqrun_stubs.wasm`);
-        this.core.proc.dyld.preload(
+        await this.core.proc.dyld.preload(
             'dllcoqperf_stubs.so', `${this.binDir}/dllcoqperf_stubs.wasm`);
-        /** @ouch these null stubs are needed because of some spurious dependency */
-        this.core.proc.dyld.preload(
-            'dllbigstringaf_stubs.so', `${this.binDir}/dlllib_stubs.wasm`,
-            {
-                js: {
-                    bigstringaf_blit_to_bytes: (vsrc, vsrc_off, vdst, vdst_off, vlen) => { },
-                    bigstringaf_blit_to_bigstring: (vsrc, vsrc_off, vdst, vdst_off, vlen) => {},
-                    bigstringaf_blit_from_bytes: (vsrc, vsrc_off, vdst, vdst_off, vlen) => {},
-                    bigstringaf_memcmp_bigstring: (vba1, vba1_off, vba2, vba2_off, vlen) => {},
-                    bigstringaf_memcmp_string: (vba, vba_off, vstr, vstr_off, vlen) => {},
-                    bigstringaf_memchr: (vba, vba_off, vchr, vlen) => {},
-                }
-            });
-        this.core.proc.dyld.preload(
+        /** bigstringaf dep usually comes from amstrong parsing, like for URI, heavy... */
+        await this.core.proc.dyld.preload(
+            'dllbigstringaf_stubs.so', `${this.binDir}/dllbigstringaf_stubs.wasm`);
+        await this.core.proc.dyld.preload(
             'dlllib_stubs.so', `${this.binDir}/dlllib_stubs.wasm`,
             {
                 js: {

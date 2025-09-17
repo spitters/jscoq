@@ -16,27 +16,37 @@
 
 (rule
  (target dllcoqrun_stubs.wasm)
- (deps byterun_stubs.c)
+ (deps
+  (:c_source byterun_stubs.c))
  (action
-  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
-	  byterun_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
-      -I%{ocaml-config:standard_library}")))
+  (bash
+   "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC %{c_source} -o %{target} -nostdlib -Wl,--shared -Wl,--export-all -I%{ocaml-config:standard_library}")))
 
 (rule
  (target dllcoqperf_stubs.wasm)
- (deps perf_stubs.c)
+ (deps
+  (:c_source perf_stubs.c))
  (action
-  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
-	  perf_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
-      -I%{ocaml-config:standard_library}")))
+  (bash
+   "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC %{c_source} -o %{target} -nostdlib -Wl,--shared -Wl,--export-all -I%{ocaml-config:standard_library}")))
+
+(rule
+ (target dllbigstringaf_stubs.wasm)
+ (deps
+  (:c_source bigstringaf_stubs.c))
+ (action
+  (bash
+   "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC %{c_source} -o %{target} -nostdlib -Wl,--shared -Wl,--export-all -I%{ocaml-config:standard_library}")))
+
+; This is the jsCoq / coq-lsp special library
 
 (rule
  (target dlllib_stubs.wasm)
- (deps lib_stubs.c)
+ (deps
+  (:c_source lib_stubs.c))
  (action
-  (bash "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC \
-	  lib_stubs.c -o %{target} -nostdlib -Wl,--shared -Wl,--export-all \
-      -I%{ocaml-config:standard_library}")))
+  (bash
+   "/opt/wasi-sdk/bin/clang -target wasm32-unknown-emscripten -D__wasi__ -fPIC %{c_source} -o %{target} -nostdlib -Wl,--shared -Wl,--export-all -I%{ocaml-config:standard_library}")))
 
 (rule
  (target jscoq_version.ml)
