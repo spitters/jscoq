@@ -203,7 +203,7 @@ _DFILES_BASE = index.html jscoq.js coq-pkgs dist etc/serve.json
 # This should at some point be bundled with esbuild
 _DEXTRA_BASE=backend/wasm/wacoq_worker.bc backend/wasm/*.wasm backend/jsoo/jscoq_worker.bc.js \
 	node_modules/ocaml-wasm node_modules/@ocaml-wasm node_modules/bootstrap/dist \
-	frontend/classic/css frontend/classic/images docs/quick-help.html
+	frontend/classic/css frontend/classic/images examples/* docs/quick-help.html
 
 _DFILES = ${addprefix $(BUILDDIR)/./, $(_DFILES_BASE) $(_DEXTRA_BASE)}
 
