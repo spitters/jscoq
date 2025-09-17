@@ -115,6 +115,7 @@ let lsp_cb =
 
   let serverVersion _ = () in
   let serverStatus _ = () in
+  let execInfo ~uri:_ ~version:_ ~range:_ = () in
 
   let out_fn = post_answer in
   Fleche.Io.CallBack.
@@ -126,6 +127,7 @@ let lsp_cb =
     ; perfData
     ; serverVersion
     ; serverStatus
+    ; execInfo
     }
 
 (* set_opts  : general Coq initialization options *)
@@ -195,7 +197,13 @@ let jscoq_execute =
     let init = !root_state in
     let files = Coq.Files.make () in
     let env = Fleche.Doc.Env.make ~init ~workspace ~files in
-    Fleche.Theory.open_ ~io ~token ~env ~uri ~version ~raw;
+    (* XXX Fixme! *)
+    let languageId = match Filename.extension (Lang.LUri.File.to_string_file uri) with
+      | ".v" -> "rocq"
+      | ".mv" -> "markdown"
+      | _ -> "rocq"
+    in
+    Fleche.Theory.open_ ~io ~token ~env ~uri ~languageId ~version ~raw;
     try_check ~token;
     ()
 

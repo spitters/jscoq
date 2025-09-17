@@ -258,6 +258,7 @@ dist-npm:
 
 .PHONY: coq coq-get coq-get-latest coq-build
 
+COQ_LSP_BRANCH = v8.20
 COQ_BRANCH = V8.20.1
 COQ_BRANCH_LATEST = v8.20.1
 COQ_REPOS = https://github.com/coq/coq.git
@@ -299,4 +300,4 @@ submodules-deinit:
 # Update submodules from upstream
 .PHONY: submodules-update
 submodules-update:
-	(cd vendor/coq && git checkout master && git pull upstream master)
+	(cd vendor/coq-lsp && git checkout $(COQ_LSP_BRANCH) && git pull upstream $(COQ_LSP_BRANCH))
