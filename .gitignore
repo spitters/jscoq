@@ -5,7 +5,6 @@
 /dist
 /dist-cli
 /dist-pkg
-/dist-webpack
 /bin
 
 # Local build configuration file

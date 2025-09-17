@@ -1,0 +1,14 @@
+{
+  "entry": [
+    "backend/wasm/wacoq_worker.ts",
+    "frontend/classic/js/index.js",
+    "frontend/cli/cli.ts",
+    "frontend/pkg/mk-pkg.ts",
+    "vendor/coq-lsp/editor/code/views/info/index.tsx",
+    "frontend/classic/js/contextual-info.ts",
+    "frontend/classic/js/jscoq-agent.js",
+    "frontend/classic/js/addon/collab/p2p.ts",
+    "frontend/classic/js/addon/collab/index.ts",
+    "frontend/classic/js/addon/collab/gist.js"
+  ]
+}

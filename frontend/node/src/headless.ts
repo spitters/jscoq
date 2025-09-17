@@ -15,7 +15,6 @@ import glob from 'glob';
 import unzip from 'fflate-unzip/src/index';
 
 // Backend imports
-import { Future } from '../../../backend/future';
 import { CoqWorker } from '../../../backend/coq-worker';
 import { CoqIdentifier } from '../../../backend/coq-identifier';
 

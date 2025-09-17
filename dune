@@ -61,8 +61,6 @@
   (source_tree docs)  ; for `quick-help.html`
   dist
   jscoq.js
-; Disabled in the lsp / esbuild branch
-; dist-webpack
   index.html
   etc/serve.json
   coq-pkgs))
@@ -114,19 +112,6 @@
   node_modules)
  (action
   (run npm run %{env:JSCOQ_BUNDLE_TARGET=esbuild-cli})))
-
-; Webpack build (legacy)
-(rule
- (targets (dir dist-webpack))
- (mode (promote (until-clean)))
- (deps
-  (source_tree backend)
-  (source_tree frontend)
-  tsconfig.json
-  webpack.config.js
-  node_modules)
- (action
-  (run npm run webpack)))
 
 ; Just the worker
 (alias

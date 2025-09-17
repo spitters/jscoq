@@ -133,15 +133,12 @@ links-clean:
 	rm -f coq-pkgs backend/jsoo/jscoq_worker.bc.js backend/wasm/wacoq_worker.bc \
 	       backend/wasm/dlllib_stubs.wasm backend/wasm/dllcoqrun_stubs.wasm
 
-.PHONY:modules bundle typecheck bundle-webpack
+.PHONY:modules bundle typecheck
 modules:
 	$(DUNE) build node_modules
 
 bundle:
 	$(DUNE) build dist dist-cli
-
-bundle-webpack:
-	$(DUNE) build dist-webpack --no-buffer
 
 typecheck:
 	$(DUNE) build node_modules
