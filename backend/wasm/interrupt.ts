@@ -8,10 +8,12 @@
  */
 class WorkerInterrupts {
 
+    debug : boolean = true;
     vec: Uint32Array
     checkpoint: number = 0
 
     setup(vec: Uint32Array) {
+        console.log("Interrupt Support Enabled (server)");
         this.vec = vec;
     }
 
@@ -19,6 +21,7 @@ class WorkerInterrupts {
         if (this.vec && typeof Atomics !== 'undefined') {
             var ld = Atomics.load(this.vec, 0);
             if (ld > this.checkpoint) {
+                if (this.debug) console.log("Rocq has been interrupted!");
                 this.checkpoint = ld;
                 return true;
             }
