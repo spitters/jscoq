@@ -50,9 +50,10 @@ let do_request ~token ~doc point (r : Method.t) =
     let textDocument = Lsp.Doc.VersionedTextDocumentIdentifier.{ uri; version } in
     let position = Lang.Point.{ line = -1; character = -1; offset = point } in
     let goals_mode = LI.Prev in
+    let pr ~token env evd x = Fleche.Info.Goals.to_pp ~token env evd x in
     let goals =
       LI.O.node ~doc ~point goals_mode |> Option.map (fun (node : Fleche.Doc.Node.t) ->
-          LI.Goals.goals ~token ~st:node.state) in
+          LI.Goals.goals ~pr ~token ~st:node.state) in
     let goals = Option.bind goals from_execution in
     let program =
       LI.O.node ~doc ~point goals_mode |> Option.map (fun (node : Fleche.Doc.Node.t) ->
