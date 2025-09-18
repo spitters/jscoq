@@ -161,7 +161,7 @@ libs-symb: ${patsubst %.coq-pkg, %.symb.json, ${wildcard coq-pkgs/*.coq-pkg}}
 # Developer Zone                                                       #
 ########################################################################
 
-.PHONY: test watch serve serve_artifact dev
+.PHONY: test watch serve serve-artifact dev
 test:
 	$(DUNE) exec --context=$(BUILD_CONTEXT) $(DUNE_FLAGS) -- npx mocha tests/main.js
 
