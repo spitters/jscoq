@@ -68,7 +68,7 @@ export class CoqProseMirror implements ICoqEditor {
     constructor(doc : CoqDocument,
                 manager: CoqManager,
                 container: HTMLDivElement,
-                onChange: (newContent : string) => void,
+                onChange: (doc: CoqDocument) => void,
                 onCursorUpdated: (offset : number) => void) {
 
         this.doc = doc;
@@ -84,10 +84,10 @@ export class CoqProseMirror implements ICoqEditor {
                 dispatchTransaction(tr) {
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
-                        let newDoc = CoqProseMirror.serializeDoc(tr.doc);
-                        onChange(newDoc);
+                        // let newDoc = CoqProseMirror.serializeDoc(tr.doc);
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
                         doc.update(newMarkdown);
+                        onChange(doc);
                     }
                     const { state } = this.state.applyTransaction(tr);
 

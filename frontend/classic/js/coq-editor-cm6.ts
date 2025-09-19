@@ -45,7 +45,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
     constructor(doc : CoqDocument,
                 manager: CoqManager,
                 container: HTMLDivElement,
-                onChange: (newContent : string) => void,
+                onChange: (doc: CoqDocument) => void,
                 onCursorUpdated: (offset : number) => void) {
         this.doc = doc;
 
@@ -59,8 +59,8 @@ export class CoqCodeMirror6 implements ICoqEditor {
                   if (v.docChanged) {
                       // Document changed
                       var newText = v.state.doc.toString();
-                      doc.update(newText);
-                      onChange(newText);
+                      this.doc.update(newText);
+                      onChange(this.doc);
                   }})
             ];
         var state = EditorState.create( { doc: doc.getValue(), extensions } );

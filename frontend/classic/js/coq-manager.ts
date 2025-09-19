@@ -24,7 +24,7 @@ import { PackageManager } from './coq-packages';
 import { CoqLayoutClassic } from './coq-layout-classic';
 
 // Editors
-import { ICoqEditor, ICoqEditorConstructor } from './coq-editor';
+import { ICoqEditorConstructor } from './coq-editor';
 import { CoqCodeMirror5 } from './coq-editor-cm5';
 import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
@@ -33,12 +33,11 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // Addons
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
-import { CoqDocument, ICoqDocumentConstructor, initDocument } from './coq-document';
+import { CoqDocument, ICoqDocumentConstructor, initDocument, content } from './coq-document';
 import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { TabManager } from './coq-tab-manager';
 
 type frontend = "pm" | "cm5" | "cm6"
-type content = "plain" | "markdown"
 
 /**
  * Coq Document Manager, client-side.
@@ -80,12 +79,9 @@ export class CoqManager {
     coq : CoqWorker;
     documents: CoqDocument[];
     tab_manager : TabManager;
-    uri : string;
-    version : number;
     layout : CoqLayoutClassic;
     packages : PackageManager;
     navEnabled : boolean;
-    preprocess : (text : string) => string;
     contextual_info : any;
     pprint : FormatPrettyPrint;
     when_ready : Promise<void>;
@@ -131,35 +127,10 @@ export class CoqManager {
 
         this.options = copyOptions(options, this.options);
 
-        // Create new document
-        let markdown =
-            (this.options.frontend !== 'pm' && this.options.content_type === 'markdown');
-        this.uri = "file:///src/browser" + (markdown ? ".mv" : ".v");
-        this.version = 0;
-
-        var contentType = this.options.content_type ??  /* oddly specific */
-                          (this.options.frontend === 'pm' ? 'markdown' : 'plain');
-
-        // For now we disable it and use instead the server logic.
-        // this.preprocess = this.getPreProcessFunc(this.options.content_type);
-        this.preprocess = this.getPreProcessFunc('plain');
-
         // Packages
         if (Array.isArray(this.options.all_pkgs)) {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
-
-        // Document processing
-        let onChange = debouncePend((raw: string) => {
-            this.version++;
-            let cooked = this.preprocess(raw);
-            this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
-        }, 200);
-
-        let onCursorUpdated = _.throttle(offset => {
-            console.log('cursor updated: ' + offset);
-            if (!onChange.pending) this.setGoalCursor(offset);
-        }, 200);
 
         this.documents = [];
         let doc = initDocument(elems, this.getDocumentConstructor(), this.options.content_type);
@@ -168,8 +139,6 @@ export class CoqManager {
             this.addDocumentButton();
             this.createDocButton(doc);
         }
-        this.tab_manager = new TabManager(this, onChange, onCursorUpdated);
-        this.tab_manager.current_tab = this.tab_manager.createTab(this.documents[0]);
 
         /* @ts-ignore */
         this.packages = null;
@@ -238,16 +207,6 @@ export class CoqManager {
             return CoqGistDocument;
         else
             return CoqDocument;
-    }
-
-    // Setup preprocess method for markdown, if needed
-    private getPreProcessFunc(content : content) : (text : string) => string {
-        switch (content) {
-        case 'plain':    return (x => x);
-        case 'markdown': return this.markdownPreprocess;
-        default:
-            throw new Error(`invalid content specification: '${content}'`);
-        }
     }
 
     /**
@@ -323,10 +282,13 @@ export class CoqManager {
     async openCollab(documentKey?) {
         // const { CollabP2P } = await import('./addon/collab/p2p');
         const { Gist } = await import('./addon/collab/Gist');
-        this.collab = {
-            // p2p: CollabP2P.attach(this, documentKey?.p2p),
-            gist: Gist.attach(this, documentKey?.gist)
-        }
+        // await coq worker
+        this.when_ready.then( () => {
+            this.collab = {
+                // p2p: CollabP2P.attach(this, documentKey?.p2p),
+                gist: Gist.attach(this, documentKey?.gist)
+            }
+        })
     }
 
     getLoadPath() {
@@ -414,23 +376,36 @@ export class CoqManager {
     coqReady() {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
-        this.when_ready_resolver();
 
-        // Send the document creation request.
-        let raw = this.preprocess(this.tab_manager.current_tab.editor.getValue());
-        let dp = { uri: this.uri, version: this.version, raw };
-        this.coq.newDoc(dp)
+        // Document processing
+        let onChange = debouncePend((doc: CoqDocument) => {
+            this.coq.update({ uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue() });
+        }, 200);
+
+        let onCursorUpdated = _.throttle(offset => {
+            console.log('cursor updated: ' + offset);
+            if (!onChange.pending) this.setGoalCursor(offset);
+        }, 200);
+
+        this.tab_manager = new TabManager(this, onChange, onCursorUpdated);
+        if (this.documents.length > 0)
+            this.tab_manager.current_tab = this.tab_manager.createTab(this.documents[0]);
+
+        this.when_ready_resolver();
     }
 
     // Coq document diagnostics.
     async coqNotification( params : PublishDiagnosticParams ) {
         let { uri, version, diagnostic }  = params;
-        // ***TODO get editor with uri
-        const editor = this.tab_manager.current_tab.editor;
+        // if document deleted then ignore
+        if (!this.documents.find((doc) => doc.getUri() === uri))
+            return;
+        // get editor with uri
+        const editor = this.tab_manager.getEditorWithUri(uri);
 
         console.log("Diags received: " + diagnostic.length.toString());
 
-        if (this.version > version) {
+        if (editor.doc.getVersion() > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
@@ -461,7 +436,7 @@ export class CoqManager {
             this.refreshWorkspace();
 
             /* Refresh goals at cursor */
-            this.setGoalCursor(this.tab_manager.current_tab.editor.getCursorOffset());
+            this.setGoalCursor(editor.getCursorOffset());
         }
     }
 
@@ -554,17 +529,6 @@ export class CoqManager {
         }
         return Object.entries(coq_options)
                      .map(([k, v]) => [k.split(/\s+/), makeValue(v)]);
-    }
-
-
-    /**
-     * Strip off plain text, leaving the Coq text.
-     * @param {string} text
-     */
-    markdownPreprocess(text) {
-        let wsfill = s => s.replace(/[^\n]/g, ' ');
-        return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
-                   .join('');
     }
 
     interruptRequest() {
@@ -667,9 +631,10 @@ export class CoqManager {
      * @param {number?} offset document offset (defaults to current cursor position).
      */
     async setGoalCursor(offset = undefined) {
-        offset ??= this.tab_manager.current_tab.editor.getCursorOffset();
+        const editor = this.tab_manager.current_tab.editor;
+        offset ??= editor.getCursorOffset();
         this.layout.waiting_for_goals(offset);
-        let resp = await this.coq.sendRequest(this.uri, offset, ['Goals']);
+        let resp = await this.coq.sendRequest(editor.doc.getUri(), offset, ['Goals']);
         if (resp[1])
             this.layout.update_goals(resp[1]);
     }
@@ -713,12 +678,6 @@ export class CoqManager {
 
         // File keybindings
         if (this.options.file_dialog) {
-
-            // ***TODO cleanup
-            /* @ts-ignore */
-            // this.editor.onAction = (action) => {this.editorActionHandler(action)};
-            /* @ts-ignore */
-            // var sp = this.editor.snippets[0];
 
             const file_bindings = {
                 // '^KeyO':   () => sp.openLocalDialog(),
@@ -791,10 +750,7 @@ export class CoqManager {
 
     editorActionHandler(action) {
         switch (action.type) {
-        case 'share-p2p':         this.actionShareP2P();        break;
-        // ***TODO cleanup
-        // case 'share-gist':        this.actionShareGist();       break;
-        // case 'share-gist-update': this.actionShareGistUpdate(); break;
+        case 'share-p2p': this.actionShareP2P(); break;
         }
     }
 
@@ -802,17 +758,6 @@ export class CoqManager {
         if (!this.collab) await this.openCollab();
         this.collab.p2p.save();
     }
-
-    // ***TODO cleanup
-    /* async actionShareGist() {
-        if (!this.collab) await this.openCollab();
-        this.collab.gist.save();
-    }
-
-    async actionShareGistUpdate() {
-        if (!this.collab) await this.openCollab();
-        this.collab.gist.saveUpdate();
-    } */
 
     createDocument(content: string, filename: string) {
         const CoqDocument = this.getDocumentConstructor();
@@ -834,6 +779,9 @@ export class CoqManager {
         doc.entryButton = button;
     }
 
+    /**
+     * button to add document
+     */
     addDocumentButton() {
         const parent_id = 'documents';
         let parent = document.getElementById(parent_id);
@@ -845,7 +793,7 @@ export class CoqManager {
             let p = document.createElement('div');
             p.setAttribute('id', parent_id);
             p.setAttribute('style', 'display: flex; flex-direction: column;');
-            if (wrapper_elem.parentElement)
+            if (wrapper_elem.parentElement && wrapper_elem.parentElement.tagName !== 'body')
                 wrapper_elem.parentElement.parentElement.insertBefore(p, wrapper_elem.parentElement);
             else
                 wrapper_elem.parentElement.insertBefore(p, wrapper_elem);

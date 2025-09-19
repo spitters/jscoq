@@ -9,13 +9,15 @@ export class CoqTab {
 
     constructor(doc: CoqDocument,
                 CoqEditor: ICoqEditorConstructor,
-                onChange: (newContent: string) => void,
+                onChange: (doc: CoqDocument) => void,
                 onCursorUpdated: (offset: number) => void,
                 manager: CoqManager,
                 parent: HTMLElement) {
         this.container = createEditorContainer();
         this.editor = new CoqEditor(doc, manager, this.container, onChange, onCursorUpdated);
-        // create tab
+        // Send the document creation request.
+        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
+        // create tab button
         if (!manager.options.multiple_editors) {
             this.tab = null;
         } else {

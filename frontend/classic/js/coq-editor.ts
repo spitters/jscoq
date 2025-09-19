@@ -38,7 +38,7 @@ export interface ICoqEditorConstructor {
     new(doc : CoqDocument,
         manager: CoqManager,
         container: HTMLDivElement,
-        onChange: (newContent : string) => void,
+        onChange: (doc: CoqDocument) => void,
         onCursorUpdated: (offset : number) => void) : ICoqEditor;
 }
 

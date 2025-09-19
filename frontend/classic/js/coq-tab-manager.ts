@@ -9,11 +9,11 @@ export class TabManager {
     manager: CoqManager;
     tab_container: HTMLElement;
 
-    onChange: (newContent: string) => void;
+    onChange: (doc: CoqDocument) => void;
     onCursorUpdated: (offset: number) => void;
 
     constructor(manager: CoqManager, 
-                onChange: (newContent: string) => void,
+                onChange: (doc: CoqDocument) => void,
                 onCursorUpdated: (offset: number) => void) {
         this.manager = manager;
         this.tabs = [];
@@ -41,7 +41,12 @@ export class TabManager {
 
     createTab(doc: CoqDocument) {
         const CoqEditor = this.manager.getEditorConstructor(this.manager.options.frontend);
-        let tab = new CoqTab(doc, CoqEditor, this.onChange, this.onCursorUpdated, this.manager, this.tab_container);
+        let tab = new CoqTab(doc,
+                             CoqEditor,
+                             this.onChange,
+                             this.onCursorUpdated,
+                             this.manager,
+                             this.tab_container);
         this.tabs.push(tab);
         if (this.tabs.length > 1) {
             tab.hide();
@@ -60,6 +65,11 @@ export class TabManager {
         }
         this.tabs.splice(0);
         this.current_tab = null;
+    }
+
+    getEditorWithUri(uri: string) {
+        const tab = this.tabs.find((tab) => tab.editor.doc.getUri() === uri);
+        return (tab) ? tab.editor : null;
     }
 
 }
