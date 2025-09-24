@@ -39,7 +39,17 @@ export class CoqDocument {
     }
 
     delete() {
-        this.entryButton && this.entryButton.remove();
+        if (this.entryButton)
+            this.entryButton.remove();
+    }
+
+    disableOpenNewTab(yes: boolean) {
+        if (this.entryButton) {
+            if (yes)
+                this.entryButton.setAttribute("disabled", "true");
+            else 
+                this.entryButton.removeAttribute("disabled");
+        }
     }
 
     // Setup preprocess method for markdown

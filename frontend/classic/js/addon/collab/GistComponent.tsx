@@ -123,10 +123,11 @@ function buttonsElem(
   gistID: string,
   setGistID: any,
   octokit: Octokit,
+  gistURL: string,
   setNotif: any
 ) {
   let linkButton = (
-    <a href={"https://gist.github.com/" + gistID} target="_blank">
+    <a href={gistURL} target="_blank">
       <button>Go to Gist</button>
     </a>
   );
@@ -192,8 +193,9 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     ""
   );
   const octokitWrite = new Octokit({ auth: token });
-  const [gistID, setGistID]: [string, any] = useState(startGistID ?? "");
-  const [notif, setNotif]: [string, any] = useState("");
+  const [gistID, setGistID]  : [string, any] = useState(startGistID ?? "");
+  const [gistURL, setGistURL]: [string, any] = useState("");
+  const [notif, setNotif]    : [string, any] = useState("");
 
   useEffect(() => {
     if (gistID) {
@@ -208,6 +210,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
               return { idx: i, filename: f, content: rawFiles[f].content };
           });
           gist.setFiles(files);
+          setGistURL(result.data.html_url);
           // @ts-ignore
           const url = new URL(location);
           url.searchParams.set("gist", gistID);
@@ -216,6 +219,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
         .catch((err) => {
           console.log(err);
           setNotif(makeErrorMessage(err));
+          setGistURL("");
         });
     }
   }, [gistID]);
@@ -225,6 +229,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     gistID,
     setGistID,
     octokitWrite,
+    gistURL,
     setNotif
   );
 

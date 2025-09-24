@@ -100,6 +100,9 @@ export class CoqProseMirror implements ICoqEditor {
             });
 
         this.view.focus();
+
+        // Send the document creation request.
+        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
     }
 
     static serializeDoc(doc) {

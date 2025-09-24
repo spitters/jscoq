@@ -70,6 +70,9 @@ export class CoqCodeMirror6 implements ICoqEditor {
               parent: container,
               extensions
             });
+
+        // Send the document creation request.
+        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
     }
 
     getValue() {

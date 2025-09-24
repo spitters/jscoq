@@ -107,6 +107,9 @@ export class ProviderContainer {
 
             scroll.destroy();
         })();
+
+        // Send the document creation request.
+        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
     }
 
     /**

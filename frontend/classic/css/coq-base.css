@@ -877,3 +877,16 @@ div.hint-package {
   border: 1px solid lightgray;
   background-color: rgb(200, 200, 200);
 }
+
+span.closable-button {
+  width: 20px;
+  height: 20px;
+  margin-left: 3px;
+  border-radius: 50%;
+  display: inline-block;
+  align-content: center;
+}
+
+span.closable-button:hover {
+  background-color: lightgray;
+}

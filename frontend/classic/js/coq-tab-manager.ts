@@ -39,6 +39,22 @@ export class TabManager {
         }
     }
 
+    setCurrent(tab: CoqTab) {
+        if (tab === this.current_tab)
+            return;
+        // process old current
+        if (this.current_tab) {
+            this.current_tab.hide();
+            this.current_tab.removeSelectedStyle();
+        }
+        // process new current
+        this.current_tab = tab;
+        if (tab) {
+            tab.show();
+            tab.addSelectedStyle();
+        }
+    }
+
     createTab(doc: CoqDocument) {
         const CoqEditor = this.manager.getEditorConstructor(this.manager.options.frontend);
         let tab = new CoqTab(doc,
@@ -48,16 +64,25 @@ export class TabManager {
                              this.manager,
                              this.tab_container);
         this.tabs.push(tab);
-        if (this.tabs.length > 1) {
-            tab.hide();
-        } else {
-            tab.show();
-            tab.addSelectedStyle();
-        }
+        tab.hide();
         return tab;
     }
 
-    // TODO close one tab
+    closeTab(tab: CoqTab) {
+        this.tabs = this.tabs.filter((t) => t !== tab);
+        tab.close();
+    }
+
+    closeTabWithDoc(doc: CoqDocument) {
+        this.tabs = this.tabs.filter((t) => {
+            if (t.editor.doc === doc) {
+                t.close();
+                return false;
+            } else
+                return true;
+        });
+        this.setCurrent((this.tabs.length > 0) ? this.tabs[0] : null);
+    }
 
     closeAll() {
         for (const tab of this.tabs) {

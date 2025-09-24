@@ -44,11 +44,10 @@ export class Gist {
     if (files.length === 0) {
       this.setFile({ filename: "gistfile1.txt", content: ""});
     }
-    this.tabs.current_tab = this.tabs.createTab(this.coq.documents[0]);
+    this.tabs.setCurrent(this.tabs.createTab(this.coq.documents[0]));
   }
 
   getFiles(): File[] {
-    // ***TODO better access to docs / editors ?
     let files: File[] = [];
     for (const doc of this.coq.documents) {
       files.push({filename: doc.getFilename(), content: doc.getValue()});

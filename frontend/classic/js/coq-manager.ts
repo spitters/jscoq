@@ -389,7 +389,7 @@ export class CoqManager {
 
         this.tab_manager = new TabManager(this, onChange, onCursorUpdated);
         if (this.documents.length > 0)
-            this.tab_manager.current_tab = this.tab_manager.createTab(this.documents[0]);
+            this.tab_manager.setCurrent(this.tab_manager.createTab(this.documents[0]));
 
         this.when_ready_resolver();
     }
@@ -771,12 +771,29 @@ export class CoqManager {
         const parent = document.getElementById('documents');
         let button = document.createElement('button');
         button.classList.add('docButton');
-        button.addEventListener('click', (ev: MouseEvent) => {
-            this.tab_manager.createTab(doc);
-        });
         button.innerText = doc.getFilename();
+        button.addEventListener('click', (ev: MouseEvent) => {
+            if (ev.target !== button)
+                return;
+            this.tab_manager.setCurrent(this.tab_manager.createTab(doc));
+        });
+        // to delete doc
+        let onClickClose = (ev: MouseEvent) => {
+            this.deleteDocument(doc);
+        };
+        let s = this.createCloseButton(onClickClose);
+        button.appendChild(s);
         parent.appendChild(button);
         doc.entryButton = button;
+    }
+
+    // rename ?
+    createCloseButton(onClickClose: (ev: MouseEvent) => void) {
+        let s = document.createElement('span');
+        s.classList.add('closable-button');
+        s.textContent = '×';
+        s.addEventListener('click', onClickClose);
+        return s;
     }
 
     /**
@@ -809,6 +826,12 @@ export class CoqManager {
         tab.innerText = 'Add document';
         parent.insertBefore(tab, parent.firstChild);
     }
+
+    deleteDocument(doc: CoqDocument) {
+        this.documents = this.documents.filter((d) => d !== doc);
+        this.tab_manager.closeTabWithDoc(doc);
+        doc.delete();
+    } 
 
     deleteAllDocuments() {
         for (const doc of this.documents)
