@@ -38,8 +38,8 @@ a, a:link, a:visited, a:active {
 
 #ide-wrapper.layout-flex {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  /* justify-content: space-between;
+  align-items: flex-start; */
 }
 
 #ide-wrapper.layout-fixed:not(.goals-active) {
@@ -869,4 +869,11 @@ div.hint-package {
 
 .ProseMirror-example-setup-style {
     padding: 1em;
+}
+
+/* TabManager */
+
+.tab.selected {
+  border: 1px solid lightgray;
+  background-color: rgb(200, 200, 200);
 }

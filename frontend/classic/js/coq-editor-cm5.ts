@@ -6,6 +6,7 @@ import { Diagnostic } from '../../../backend';
 import { ProviderContainer } from './cm-provider-container';
 import { CoqManager, ManagerOptions } from './coq-manager';
 import { ICoqEditor } from './coq-editor';
+import { CoqDocument } from './coq-document';
 
 interface CM5Options {
     mode?: { "company-coq": boolean }
@@ -17,16 +18,27 @@ interface CM5Options {
 /** Interface for CM5 */
 export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
-    constructor(eIds: (string | HTMLElement)[], options : ManagerOptions, onChange, onCursorUpdate, manager : CoqManager) {
+    doc : CoqDocument;
 
-        super(eIds, options, manager);
+    constructor(doc : CoqDocument,
+                manager: CoqManager,
+                container: HTMLDivElement,
+                onChange: (doc: CoqDocument) => void,
+                onCursorUpdated: (offset : number) => void) {
 
+        super([container], manager, doc);
+        
+        this.doc = doc;
+        if (this.getValue())
+            this.doc.update(this.getValue());
+        
         this.onChangeAny = () => {
             let txt = this.getValue();
-            onChange(txt);
+            this.doc.update(txt)
+            onChange(this.doc);
         };
         this.onCursorUpdate = (cm) => {
-            onCursorUpdate(this.getCursorOffset());
+            onCursorUpdated(this.getCursorOffset());
         }
         // if (this.options.mode && this.options.mode['company-coq']) {
         //     this.company_coq = new CompanyCoq(this.manager);

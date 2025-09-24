@@ -1,4 +1,5 @@
 import { CmCoqProvider } from './cm-provider';
+import { CoqDocument } from './coq-document';
 import { CoqManager, ManagerOptions } from "./coq-manager";
 import { Deprettify } from "./deprettify";
 
@@ -21,14 +22,14 @@ export class ProviderContainer {
     onResize : (evt : any ) => void;
     onAction : (evt : any ) => void;
     currentFocus : CmCoqProvider;
-    manager : any;
+    manager : CoqManager;
 
     /**
      * Creates an instance of ProviderContainer.
      */
-    constructor(elementRefs : (string | HTMLElement)[], options : ManagerOptions, manager : CoqManager) {
+    constructor(elementRefs : (string | HTMLElement)[], manager : CoqManager, doc : CoqDocument) {
 
-        this.options = options;
+        this.options = manager.options;
 
         /**
          * @name ProviderContainer#snippets
@@ -78,7 +79,7 @@ export class ProviderContainer {
                     element = Deprettify.trim(element);
 
                 // Init.
-                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager);
+                let cm = new CmCoqProvider(element, this.options.editor, this.options.replace, idx, manager, doc);
 
                 this.snippets.push(cm);
 

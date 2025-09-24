@@ -2,7 +2,9 @@
 import { EditorState, RangeSet, Facet, StateEffect, StateField } from "@codemirror/state";
 import { EditorView, lineNumbers, Decoration, ViewPlugin } from "@codemirror/view";
 import { Diagnostic } from "../../../backend/coq-worker";
-import { ICoqEditor, editorAppend } from "./coq-editor";
+import { ICoqEditor } from "./coq-editor";
+import { CoqDocument } from "./coq-document";
+import { CoqManager } from "./coq-manager";
 
 // import './mode/coq-mode.js';
 
@@ -38,12 +40,14 @@ const diagField = StateField.define({
 export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
 
-    // element e
-    constructor(eIds : string[], options, onChange, onCursorUpdated, manager) {
-        if (eIds.length != 1)
-            throw new Error('not implemented: `cm6` frontend requires a single element')
+    doc : CoqDocument;
 
-        let { container, area }  = editorAppend(eIds[0]);
+    constructor(doc : CoqDocument,
+                manager: CoqManager,
+                container: HTMLDivElement,
+                onChange: (doc: CoqDocument) => void,
+                onCursorUpdated: (offset : number) => void) {
+        this.doc = doc;
 
         var extensions =
             [ diagField,
@@ -55,12 +59,11 @@ export class CoqCodeMirror6 implements ICoqEditor {
                   if (v.docChanged) {
                       // Document changed
                       var newText = v.state.doc.toString();
-                      area.value = newText;
-                      onChange(newText);
+                      this.doc.update(newText);
+                      onChange(this.doc);
                   }})
             ];
-
-        var state = EditorState.create( { doc: area.value, extensions } );
+        var state = EditorState.create( { doc: doc.getValue(), extensions } );
 
         this.view = new EditorView(
             { state,

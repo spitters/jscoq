@@ -101,8 +101,9 @@ Qed.
 
 Please edit your code here!
 
-</textarea>
+    </textarea>
   </div> <!-- /#subdiv -->
+  <div id="editors"></div>
   </div> <!-- /#document -->
   </div> <!-- /#document-wrapper -->
   </div> <!-- /#code-wrapper -->
@@ -128,6 +129,7 @@ Please edit your code here!
         focus: false,
         debug: true,
         editor: { mode: { 'company-coq': false } },
+        multiple_editors: false,
         init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith'],
         all_pkgs: ['coq']
     };

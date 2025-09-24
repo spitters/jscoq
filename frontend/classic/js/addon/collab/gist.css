@@ -1,0 +1,43 @@
+.GistComponent {
+  font-family: monospace;
+}
+
+button {
+  font-family: monospace;
+  height: 30px;
+  min-width: max-content;
+  margin: 2px;
+}
+
+input {
+  font-family: monospace;
+  height: 30px;
+  margin: 2px;
+}
+
+div#notif {
+  margin: 5px;
+  padding: 5px;
+  background-color: lightgray;
+  border: 1px solid green;
+}
+
+#close-notif {
+  width: 24px;
+  height: 24px;
+}
+
+.input-container div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.input-container div label {
+  min-width: 110px;
+  padding-left: 5px;
+}
+
+#input-id, #input-token {
+  min-width: 300px;
+}

@@ -11,8 +11,9 @@ import 'prosemirror-view/style/prosemirror.css';
 import 'prosemirror-menu/style/menu.css';
 import 'prosemirror-example-setup/style/style.css';
 import { Diagnostic } from '../../../backend';
-import { ICoqEditor, editorAppend } from './coq-editor';
+import { ICoqEditor } from './coq-editor';
 import { CoqManager, ManagerOptions } from './coq-manager';
+import { CoqDocument } from './coq-document';
 
 function diagNew(d : Diagnostic) {
     var mark_class = (d.severity === 1) ? 'coq-eval-failed' : 'coq-eval-ok';
@@ -62,27 +63,31 @@ let coqDiags = new Plugin<DecorationSet>({
 export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
-    // eId must be a textarea
-    constructor(eIds, options: ManagerOptions, onChange, onCursorUpdated, manager: CoqManager) {
+    doc : CoqDocument;
 
-        let { container, area } = editorAppend(eIds[0]);
+    constructor(doc : CoqDocument,
+                manager: CoqManager,
+                container: HTMLDivElement,
+                onChange: (doc: CoqDocument) => void,
+                onCursorUpdated: (offset : number) => void) {
 
-        var doc = defaultMarkdownParser.parse(area.value);
+        this.doc = doc;
+        var docNode = defaultMarkdownParser.parse(doc.getValue());
 
         this.view =
             new EditorView(container, {
                 state: EditorState.create({
-                    doc: doc || undefined,
+                    doc: docNode || undefined,
                     plugins: [...exampleSetup({schema: schema}), coqDiags]
                 }),
                 // We update the text area
                 dispatchTransaction(tr) {
                     // Update textarea only if content has changed
                     if (tr.docChanged) {
-                        let newDoc = CoqProseMirror.serializeDoc(tr.doc);
-                        onChange(newDoc);
+                        // let newDoc = CoqProseMirror.serializeDoc(tr.doc);
                         var newMarkdown = defaultMarkdownSerializer.serialize(tr.doc);
-                        area.value = newMarkdown;
+                        doc.update(newMarkdown);
+                        onChange(doc);
                     }
                     const { state } = this.state.applyTransaction(tr);
 

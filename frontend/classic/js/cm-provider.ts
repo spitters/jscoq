@@ -35,6 +35,7 @@ import '../external/CodeMirror-TeX-input/addon/hint/tex-input-hint.js';
 import './mode/coq-mode.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 import { Diagnostic } from '../../../backend/coq-worker.js';
+import { CoqDocument } from './coq-document.js';
 
 /**
  * A Coq sentence, typically ended in dot "."
@@ -139,7 +140,7 @@ export class CmCoqProvider {
      * @param {number} idx index of this snippet within a ProviderContainer
      * @memberof CmCoqProvider
      */
-    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager: CoqManager) {
+    constructor(element: HTMLElement, options : CM5Options, replace : boolean, idx: number, manager : CoqManager, doc: CoqDocument) {
 
         this.options = options;
         this.idx = idx;
@@ -176,6 +177,9 @@ export class CmCoqProvider {
         } else {
             this.editor = this.createEditor(element, cmOpts, replace);
         }
+
+        if (!this.editor.getValue())
+            this.editor.setValue(doc.getValue());
 
         if (replace) this.editor.addKeyMap('jscoq-snippet');
 
@@ -262,6 +266,19 @@ export class CmCoqProvider {
     getText() {
         return this.editor.getValue();
     }
+
+    show() {
+        this.editor.getWrapperElement().removeAttribute('style');
+    }
+
+    hide() {
+        this.editor.getWrapperElement().setAttribute('style', 'display: none;');
+    }
+
+    close() {
+        this.editor.getWrapperElement().remove();
+    }
+    
     // ----------------------------------
     // CoqEditor interface implementation
 
@@ -783,15 +800,21 @@ export class CmCoqProvider {
             a1 = this._makeDialogLink('To disk...', () => this.saveToFile()),
             share = $('<span>').addClass('dialog-share')
                     .append($('<img>').attr('src', JsCoq.base_path + 'frontend/classic/images/share.svg')),
-            a2 = this._makeDialogLink('Hastebin', () => this.shareHastebin()),
-            a3 = betaOnly(() =>
-                 this._makeDialogLink('P2P', () => this.shareP2P())),
-            a4 = this._makeDialogLink('Gist', () => this.shareGist());
+            a2 = betaOnly(() =>
+                 this._makeDialogLink('P2P', () => this.shareP2P()));
 
-        span.append(a1, share.append(a2, a3, a4));
+        span.append(a1, share.append(a2/* , a3, a4 */));
 
         this.editor.openDialog(span[0], (sel) => this.saveLocal(sel), 
                                {value: this.filename});
+
+        // update filename immediatly as the user type
+        document.getElementById('cm-provider-local-files-input').oninput = (e) => {
+            let new_fn = e.target['value'];
+            this.filename = new_fn;
+            document.getElementById('ide-wrapper')
+                    .setAttribute('data-filename', new_fn);
+        };
     }
 
     saveToFile() {
@@ -801,24 +824,17 @@ export class CmCoqProvider {
         a[0].click();
     }
 
-    shareHastebin() {
-        this.onAction({type: 'share-hastebin'});
-    }
-
     shareP2P() {
         this.onAction({type: 'share-p2p'});
-    }
-
-    shareGist() {
-        this.onAction({type: 'share-gist'});
     }
 
     /**
      * @param {string | number | boolean | ((this: HTMLElement, index: number, text: string) => string | number | boolean)} text
      */
-    _makeFileDialog(text) {
+    _makeFileDialog(text) { 
         var list_id = 'cm-provider-local-files',
-            input = $('<input>').attr('list', list_id),
+            input = $('<input>').attr('id', list_id + '-input')
+                                .attr('list', list_id),
             list = $('<datalist>').attr('id', list_id);
 
         this.getLocalFileStore().keys().then((keys) => {
