@@ -100,10 +100,10 @@ jscoq-static: force
 	$(DUNE) build @jscoq-static $(DUNE_FLAGS)
 
 jscoq: force
-	$(DUNE) build @jscoq $(DUNE_FLAGS)
+	@$(DUNE) build @jscoq $(DUNE_FLAGS)
 
 wacoq: force
-	$(DUNE) build @wacoq $(DUNE_FLAGS)
+	@$(DUNE) build @wacoq $(DUNE_FLAGS)
 
 both: force
 	$(DUNE) build @jscoq @wacoq $(DUNE_FLAGS)
