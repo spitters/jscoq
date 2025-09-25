@@ -5,22 +5,43 @@ import process from "process";
 import * as esbuild from "esbuild";
 import { sassPlugin } from "esbuild-sass-plugin";
 
-let watchConfig = (entry) => {
-  return {
-    onRebuild(error, result) {
-      console.log(`[watch] build started (rebuild for ${entry})`);
-      if (error) {
-        error.errors.forEach((error) =>
+const plugins = [{
+  name: 'esbuild-problem-matcher',
+  setup(build) {
+    let file = build.initialOptions.entryPoints[0];
+
+    build.onStart(() => {
+      console.log(`[watch] build started for ${file}`);
+    });
+
+    build.onEnd(result => {
+      if(result.errors.length > 0) {
+        result.errors.forEach((e) =>
           console.error(
-            `> ${error.location.file}:${error.location.line}:${error.location.column}: error: ${error.text}`
+            `> ${e.location.file}:${e.location.line}:${e.location.column}: error: ${e.text}`
           )
         );
-      } else console.log(`[watch] build finished (rebuild for ${entry}`);
-    },
-  };
+      } else {
+        console.log(`[watch] build finished for ${file}`);
+        if (enableMeta) {
+          fs.writeFileSync(`${file}.json`, JSON.stringify(result.metafile, null, 2));
+        }
+      }
+    });
+  },
+}];
+
+const watchContext = async (ctxp) => {
+  let ctx = await ctxp;
+
+  if (process.argv.includes("--watch")) {
+    await ctx.watch();
+  } else {
+    await ctx.rebuild();
+    await ctx.dispose();
+  }
 };
 
-let watch = process.argv.includes("--watch") ? watchConfig : (entry) => false;
 let minify = process.argv.includes("--minify");
 let disable_sourcemap = process.argv.includes("--sourcemap=no");
 let sourcemap = disable_sourcemap ? null : { sourcemap: "inline" };
@@ -29,87 +50,59 @@ let enableMeta = false
 
 // Backend build, WASM worker.
 var backendEntry = "./backend/wasm/wacoq_worker.ts"
-var backend = esbuild
-  .build({
-    entryPoints: [backendEntry],
-    bundle: true,
-    platform: "browser",
-    format: "esm",
-    outdir: "dist",
-    inject: ["./backend/wasm/shims/process-shim.js",
-      "./backend/wasm/shims/buffer-shim.js"
-    ],
-    define: {
-      global: "self"
-    },
-    metafile: enableMeta,
-    ...sourcemap,
-    minify,
-    // watch: watch(frontEndEntry),
-  })
-  .then((res) => {
-    if(enableMeta) fs.writeFileSync('backend-meta.json', JSON.stringify(res.metafile));
-    console.log(`[watch] build finished for ${backendEntry}`);
-  })
-  .catch((exn) => {
-    console.log(exn);
-    process.exit(1)}
-  );
+var backend = watchContext(esbuild.context({
+  entryPoints: [backendEntry],
+  bundle: true,
+  platform: "browser",
+  format: "esm",
+  outdir: "dist",
+  inject: ["./backend/wasm/shims/process-shim.js",
+           "./backend/wasm/shims/buffer-shim.js"
+          ],
+  define: {
+    global: "self"
+  },
+  metafile: enableMeta,
+  ...sourcemap,
+  minify,
+  plugins
+}));
 
 // Frontend build, for modern Chrome
 var frontEndEntry = "./frontend/classic/js/index.js"
-var frontend = esbuild
-  .build({
-    entryPoints: [frontEndEntry],
+var frontend = watchContext(esbuild.context({
+  entryPoints: [frontEndEntry],
+  bundle: true,
+  ...sourcemap,
+  platform: "browser",
+  format: "esm",
+  loader: {
+    '.png': 'binary',
+    '.svg': 'dataurl'
+  },
+  metafile: enableMeta,
+  outdir: "dist/frontend",
+  minify,
+  // watch: watch(frontEndEntry),
+  plugins: [sassPlugin(), ...plugins]
+}));
+
+function viewBuild(name, dir, file) {
+  return watchContext(esbuild.context({
+    entryPoints: [path.join(dir, file)],
     bundle: true,
-    ...sourcemap,
+    ...sourcemap_view,
     platform: "browser",
-    format: "esm",
+    outdir: path.join("dist/frontend", name),
+    outbase: dir,
+    minify,
     loader: {
       '.png': 'binary',
       '.svg': 'dataurl'
     },
     metafile: enableMeta,
-    outdir: "dist/frontend",
-    minify,
-    // watch: watch(frontEndEntry),
-    plugins: [sassPlugin()]
-  })
-  .then((res) => {
-    if(enableMeta) fs.writeFileSync('frontend-meta.json', JSON.stringify(res.metafile));
-    console.log(`[watch] build finished for ${frontEndEntry}`);
-  })
-  .catch((exn) => {
-    console.log(exn);
-    process.exit(1)}
-  );
-
-function viewBuild(name, dir, file) {
-  return esbuild
-    .build({
-      entryPoints: [path.join(dir, file)],
-      bundle: true,
-      ...sourcemap_view,
-      platform: "browser",
-      outdir: path.join("dist/frontend", name),
-      outbase: dir,
-      minify,
-      loader: {
-        '.png': 'binary',
-        '.svg': 'dataurl'
-      },
-      metafile: enableMeta,
-      // watch: watch(file),
-    })
-    .then((res) => {
-      if(enableMeta) fs.writeFileSync(name + '-meta.json', JSON.stringify(res.metafile));
-      console.log(`[watch] build finished for ${file}`);
-    })
-    .catch((exn) => {
-      console.log(exn);
-      process.exit(1)
-    }
-          );
+    plugins
+  }));
 }
 
 var infoView = viewBuild("info-view", "./vendor/coq-lsp/editor/code/views/info/", "index.tsx");
