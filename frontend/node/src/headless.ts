@@ -10,7 +10,7 @@ import { EventEmitter } from 'events';
 import { inspect } from 'util';
 import mkdirp from 'mkdirp';
 import * as find from 'find';
-import glob from 'glob';
+import * as glob from 'glob';
 // There is some esbuild issue with this package
 import unzip from 'fflate-unzip/src/index';
 

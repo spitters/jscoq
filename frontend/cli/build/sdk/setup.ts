@@ -3,7 +3,7 @@
 import path from 'path';
 import mkdirp from 'mkdirp';
 import findUp from 'find-up';
-import glob from 'glob';
+import * as glob from 'glob';
 // There is some esbuild issue with this package
 import unzip from 'fflate-unzip/src/index';
 import chld from 'child-process-promise';
