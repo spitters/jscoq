@@ -2,12 +2,13 @@ import { CoqDocument } from "./coq-document";
 import { CoqManager } from "./coq-manager";
 import { CoqTab } from "./coq-tab";
 
-export class TabManager {
+export class CoqTabManager {
     
     tabs: CoqTab[];
     current_tab: CoqTab;
     manager: CoqManager;
     tab_container: HTMLElement;
+    private connected : boolean = false;
 
     onChange: (doc: CoqDocument) => void;
     onCursorUpdated: (offset: number) => void;
@@ -39,6 +40,14 @@ export class TabManager {
         }
     }
 
+    connectWorker() {
+        if (this.connected) return;
+        this.connected = true;
+        for (let tab of this.tabs) {
+            tab.connectWorker();
+        }
+    }
+
     setCurrent(tab: CoqTab) {
         if (tab === this.current_tab)
             return;
@@ -55,6 +64,19 @@ export class TabManager {
         }
     }
 
+    findTab(doc: CoqDocument) {
+        for (let tab of this.tabs) {
+            if (tab.editor.doc === doc)
+                return tab;
+        }
+        return null;
+    }
+
+    getEditorWithUri(uri: string) {
+        const tab = this.tabs.find((tab) => tab.editor.doc.getUri() === uri);
+        return (tab) ? tab.editor : null;
+    }
+
     createTab(doc: CoqDocument) {
         const CoqEditor = this.manager.getEditorConstructor(this.manager.options.frontend);
         let tab = new CoqTab(doc,
@@ -65,6 +87,8 @@ export class TabManager {
                              this.tab_container);
         this.tabs.push(tab);
         tab.hide();
+        if (this.connected)
+            tab.connectWorker();
         return tab;
     }
 
@@ -74,6 +98,7 @@ export class TabManager {
     }
 
     closeTabWithDoc(doc: CoqDocument) {
+        let changeCurrent = this.current_tab && this.current_tab.editor.doc === doc;
         this.tabs = this.tabs.filter((t) => {
             if (t.editor.doc === doc) {
                 t.close();
@@ -81,7 +106,8 @@ export class TabManager {
             } else
                 return true;
         });
-        this.setCurrent((this.tabs.length > 0) ? this.tabs[0] : null);
+        if (changeCurrent)
+            this.setCurrent((this.tabs.length > 0) ? this.tabs[0] : null);
     }
 
     closeAll() {
@@ -90,11 +116,6 @@ export class TabManager {
         }
         this.tabs.splice(0);
         this.current_tab = null;
-    }
-
-    getEditorWithUri(uri: string) {
-        const tab = this.tabs.find((tab) => tab.editor.doc.getUri() === uri);
-        return (tab) ? tab.editor : null;
     }
 
 }

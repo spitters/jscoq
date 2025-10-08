@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/core";
-import { useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useState, Dispatch, SetStateAction, ChangeEvent } from "react";
 
 interface Gist {
   setFiles(files: File[]): void;
@@ -20,7 +20,7 @@ export type File = {
 
 type NotifProps = {
   notif: string;
-  setNotif: any;
+  setNotif: Dispatch<SetStateAction<string>>;
 };
 
 function Notif({ notif, setNotif }: NotifProps) {
@@ -124,7 +124,7 @@ function buttonsElem(
   setGistID: any,
   octokit: Octokit,
   gistURL: string,
-  setNotif: any
+  setNotif: Dispatch<SetStateAction<string>>,
 ) {
   let linkButton = (
     <a href={gistURL} target="_blank">
@@ -189,13 +189,13 @@ type GistComponentProps = {
 };
 
 export default function GistComponent({ gist, startGistID }: GistComponentProps) {
-  const [token, setToken]: [string, any] = useState(
+  const [token, setToken]: [string, Dispatch<SetStateAction<string>>] = useState(
     ""
   );
   const octokitWrite = new Octokit({ auth: token });
-  const [gistID, setGistID]  : [string, any] = useState(startGistID ?? "");
-  const [gistURL, setGistURL]: [string, any] = useState("");
-  const [notif, setNotif]    : [string, any] = useState("");
+  const [gistID, setGistID]: [string, Dispatch<SetStateAction<string>>] = useState(startGistID ?? "");
+  const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState("");
+  const [notif, setNotif]: [string, Dispatch<SetStateAction<string>>] = useState("");
 
   useEffect(() => {
     if (gistID) {

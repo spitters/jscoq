@@ -64,6 +64,7 @@ export class CoqProseMirror implements ICoqEditor {
     view : EditorView;
 
     doc : CoqDocument;
+    manager : CoqManager;
 
     constructor(doc : CoqDocument,
                 manager: CoqManager,
@@ -72,6 +73,7 @@ export class CoqProseMirror implements ICoqEditor {
                 onCursorUpdated: (offset : number) => void) {
 
         this.doc = doc;
+        this.manager = manager;
         var docNode = defaultMarkdownParser.parse(doc.getValue());
 
         this.view =
@@ -100,9 +102,6 @@ export class CoqProseMirror implements ICoqEditor {
             });
 
         this.view.focus();
-
-        // Send the document creation request.
-        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
     }
 
     static serializeDoc(doc) {
@@ -114,6 +113,15 @@ export class CoqProseMirror implements ICoqEditor {
 
     getValue() {
         return CoqProseMirror.serializeDoc(this.view.state.doc);
+    }
+
+    connectWorker() {
+        // Send the document creation request.
+        this.manager.coq.newDoc({
+            uri:     this.doc.getUri(),
+            version: this.doc.getVersion(),
+            raw:     this.doc.getRawValue()
+        });
     }
 
     clearDiagnostics() {
@@ -140,6 +148,7 @@ export class CoqProseMirror implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
+    close() {}
 
     static process_node(acc) {
         return (node, pos, parent, index) => {

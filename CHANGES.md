@@ -52,6 +52,9 @@
    (@helguo, @ejgallego, cc: #321, #397)
  - [gist] Have Gist functional (read, create, update) using React.
    Handle multiple files of a gist. (@helguo, #401)
+ - [editors] Have multiple documents and editors (@helguo, #402)
+ - [editors] Improve architecture for multiple documents and editors.
+   Able to delete regular documents and close tabs (@helguo, #419)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

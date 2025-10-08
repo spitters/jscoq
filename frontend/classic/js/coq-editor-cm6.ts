@@ -41,6 +41,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
 
     doc : CoqDocument;
+    manager : CoqManager;
 
     constructor(doc : CoqDocument,
                 manager: CoqManager,
@@ -48,13 +49,14 @@ export class CoqCodeMirror6 implements ICoqEditor {
                 onChange: (doc: CoqDocument) => void,
                 onCursorUpdated: (offset : number) => void) {
         this.doc = doc;
+        this.manager = manager;
 
         var extensions =
             [ diagField,
               lineNumbers(),
               EditorView.updateListener.of(v => {
-                  if(v.selectionSet) {
-                    onCursorUpdated(v.state.selection.main.head);
+                  if (v.selectionSet) {
+                      onCursorUpdated(v.state.selection.main.head);
                   }
                   if (v.docChanged) {
                       // Document changed
@@ -70,13 +72,19 @@ export class CoqCodeMirror6 implements ICoqEditor {
               parent: container,
               extensions
             });
-
-        // Send the document creation request.
-        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
     }
 
     getValue() {
         return this.view.state.doc.toString();
+    }
+
+    connectWorker() {
+        // Send the document creation request.
+        this.manager.coq.newDoc({
+            uri:     this.doc.getUri(),
+            version: this.doc.getVersion(),
+            raw:     this.doc.getRawValue()
+        });
     }
 
     clearDiagnostics() {
@@ -111,6 +119,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
+    close() {}
 }
 
 // Local Variables:

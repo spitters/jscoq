@@ -29,6 +29,7 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         super([container], manager, doc);
         
         this.doc = doc;
+        this.manager = manager;
         if (this.getValue())
             this.doc.update(this.getValue());
         
@@ -48,6 +49,15 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
     getValue() {
         return this.snippets.map(part => part.editor.getValue()).join('\n');
+    }
+
+    connectWorker() {
+        // Send the document creation request.
+        this.manager.coq.newDoc({
+            uri:     this.doc.getUri(),
+            version: this.doc.getVersion(),
+            raw:     this.doc.getRawValue()
+        });
     }
 
     clearDiagnostics() {
@@ -78,5 +88,10 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
     getCursorOffset(): number {
         return this.snippets[0].getCursorOffset();
+    }
+
+    close() {
+        for(let part of this.snippets)
+            part.close();
     }
 }

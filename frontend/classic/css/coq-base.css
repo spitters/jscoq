@@ -871,12 +871,14 @@ div.hint-package {
     padding: 1em;
 }
 
-/* TabManager */
+/* CoqTabManager */
 
 .tab.selected {
   border: 1px solid lightgray;
   background-color: rgb(200, 200, 200);
 }
+
+/* CoqDocumentManager */
 
 span.closable-button {
   width: 20px;

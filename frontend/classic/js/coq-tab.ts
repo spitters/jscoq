@@ -6,6 +6,7 @@ export class CoqTab {
     tab: HTMLButtonElement;
     editor: ICoqEditor;
     container: HTMLDivElement;
+    private connected: boolean = false;
 
     constructor(doc: CoqDocument,
                 CoqEditor: ICoqEditorConstructor,
@@ -23,7 +24,6 @@ export class CoqTab {
             this.tab = tab;
             parent.appendChild(tab);
         }
-        doc.disableOpenNewTab(true);
     }
 
     private createTabButton(doc: CoqDocument, manager: CoqManager) {
@@ -45,9 +45,23 @@ export class CoqTab {
                 tab_manager.setCurrent((tab_manager.tabs.length > 0) ? tab_manager.tabs[0] : null);
             }
         };
-        let s = manager.createCloseButton(onClickClose);
+        let s = this.createCloseButton(onClickClose);
         tab.appendChild(s);
         return tab;
+    }
+
+    private createCloseButton(onClickClose: (ev: MouseEvent) => void) {
+        let s = document.createElement('span');
+        s.classList.add('closable-button');
+        s.textContent = '×';
+        s.addEventListener('click', onClickClose);
+        return s;
+    }
+
+    connectWorker() {
+        if (this.connected) return;
+        this.connected = true;
+        this.editor.connectWorker();
     }
 
     addSelectedStyle() {
@@ -69,8 +83,8 @@ export class CoqTab {
     }
 
     close() {
-        this.editor.doc.disableOpenNewTab(false);
         this.container.remove();
         this.tab.remove();
+        this.editor.close();
     }
 }
