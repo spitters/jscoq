@@ -140,6 +140,9 @@ let exec_init (set_opts : init_options) =
 
   Fleche.Io.CallBack.set lsp_cb;
 
+  (* Send (and expect) both line/char and offset information *)
+  Fleche_lsp.JLang.Point.Mode.(set Full);
+
   (* jsCoq-specific flags *)
   Global.set_VM false;
   Global.set_native_compiler false;
