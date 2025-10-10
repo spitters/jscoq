@@ -28,7 +28,7 @@ export class CoqTab {
 
     private createTabButton(doc: CoqDocument, manager: CoqManager) {
         let tab = document.createElement('button');
-        tab.classList.add('tab');
+        tab.classList.add('tabButton');
         tab.innerText = doc.getFilename();
         let tab_manager = manager.tab_manager;
         tab.addEventListener('click', (ev: MouseEvent) => {
@@ -52,7 +52,7 @@ export class CoqTab {
 
     private createCloseButton(onClickClose: (ev: MouseEvent) => void) {
         let s = document.createElement('span');
-        s.classList.add('closable-button');
+        s.classList.add('closeButton');
         s.textContent = '×';
         s.addEventListener('click', onClickClose);
         return s;

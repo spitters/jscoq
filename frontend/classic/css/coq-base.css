@@ -873,14 +873,16 @@ div.hint-package {
 
 /* CoqTabManager */
 
-.tab.selected {
+.tabButton.selected {
   border: 1px solid lightgray;
   background-color: rgb(200, 200, 200);
 }
 
-/* CoqDocumentManager */
+.tabButton.selected:hover {
+  background-color: rgb(170, 170, 170);
+}
 
-span.closable-button {
+span.closeButton {
   width: 20px;
   height: 20px;
   margin-left: 3px;
@@ -889,6 +891,26 @@ span.closable-button {
   align-content: center;
 }
 
-span.closable-button:hover {
-  background-color: lightgray;
+span.closeButton:hover {
+  background-color: rgb(190, 190, 190);
+}
+
+/* CoqDocumentManager */
+
+.docButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.docButton .deleteButton {
+  width: 20px;
+  height: 20px;
+  margin-left: 5px;
+  padding: 1px;
+  border-radius: 25%;
+}
+
+.docButton .deleteButton:hover {
+  background-color: rgb(190, 190, 190);
 }

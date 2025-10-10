@@ -1,8 +1,10 @@
 
-import React, { useState, Dispatch, SetStateAction, MouseEvent } from "react";
+import React, { useState, Dispatch, SetStateAction, MouseEvent, useContext, createContext } from "react";
 import ReactDOM from "react-dom/client";
 import { CoqDocumentManager } from "./coq-document-manager"
 import { CoqDocument } from "./coq-document";
+
+const URLContext = createContext<(relative: string) => URL>(null);
 
 type DocumentButtonProps = {
   doc: CoqDocument;
@@ -15,12 +17,13 @@ function DocumentButton({
   onClick,
   onClose,
 }: DocumentButtonProps) {
+  const getURL = useContext(URLContext);
+  // from https://feathericons.com
+  let src = getURL("frontend/classic/images/trash-2.svg").toString();
   return (
     <button className="docButton" onClick={(ev) => onClick(doc, ev)}>
       {doc.getFilename()}
-      <span className="closable-button" onClick={() => onClose(doc)}>
-        &times;
-      </span>
+      <img src={src} className="deleteButton" onClick={() => onClose(doc)}/>
     </button>
   );
 }
@@ -82,6 +85,7 @@ function DocumentManagerComponent({
       placeholder="filename"
       value={fn}
       onChange={(v) => setFn(v.target.value)}
+      // style={{width: "160px"}}
     />
   );
 
@@ -92,10 +96,7 @@ function DocumentManagerComponent({
       <DocumentList
         docs={docs}
         onClick={onDocButtonClick}
-        onClose={(doc) => {
-          onDocButtonClose(doc);
-          // setDocs([...doc_manager.documents]);
-        }}
+        onClose={onDocButtonClose}
       />
     </>
   );
@@ -113,8 +114,10 @@ export function initDocumentManagerComponent(doc_manager: CoqDocumentManager) {
   };
   
   let onDocButtonClose = (doc: CoqDocument) => {
-    // console.log("close");
-    doc_manager.deleteDocument(doc);
+    if (window.confirm(`Are you sure you want to delete ${doc.getFilename()} ?`)) {
+      // console.log("close");
+      doc_manager.deleteDocument(doc);
+    }
   };
   
   let onAddDocClick = (fn: string) => {
@@ -123,17 +126,23 @@ export function initDocumentManagerComponent(doc_manager: CoqDocumentManager) {
     const filename = "untitled" + n + ((doc_manager.manager.options.content_type === 'plain') ? '.v' : '.mv');
     doc_manager.createDocument("", (fn !== "") ? fn : filename);
   };
+
+  // to get icon
+  const getURL = (relative: string) =>
+    new URL(relative, doc_manager.manager.options.base_path);
   
   const rootElement = document.getElementById(doc_manager.container_id);
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <DocumentManagerComponent
-      doc_manager={doc_manager}
-      onDocButtonClick={onDocButtonClick}
-      onDocButtonClose={onDocButtonClose}
-      onAddDocClick={onAddDocClick}
-      />
+      <URLContext.Provider value={getURL}>
+        <DocumentManagerComponent
+        doc_manager={doc_manager}
+        onDocButtonClick={onDocButtonClick}
+        onDocButtonClose={onDocButtonClose}
+        onAddDocClick={onAddDocClick}
+        />
+      </URLContext.Provider>
     </React.StrictMode>
   );
 }
