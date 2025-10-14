@@ -1,31 +1,52 @@
 import { CoqDocument, initDocument } from "./coq-document";
 import { CoqManager } from "./coq-manager";
-import { initDocumentManagerComponent } from "./DocumentManagerComponent"
 
-export class CoqDocumentManager {
+export interface ICoqDocumentManager {
+    documents: CoqDocument[];
+    manager: CoqManager;
+    container_id: string;
+    createDocument(content: string, filename: string): boolean;
+    deleteDocument(doc: CoqDocument): void;
+    ifFilenameExists(filename: string): boolean;
+}
+
+export class CoqDocumentManager implements ICoqDocumentManager {
 
     documents: CoqDocument[];
     manager: CoqManager;
     container_id: string;
-    setDocs: any;
+    setDocs: any; // ***TODO
 
-    constructor(manager: CoqManager, elems: string[]) {
+    constructor(manager: CoqManager, elems: string[] | CoqDocument[]) {
         this.manager = manager;
         this.documents = [];
-        let doc = initDocument(manager, elems);
-        this.documents.push(doc);
+        if (elems.every((e) => e instanceof CoqDocument)) {
+            this.documents = elems;
+        } else {
+            const doc = initDocument(manager, elems);
+            this.documents.push(doc);
+        }
         if (manager.options.multiple_editors) {
             this.container_id = 'documents';
-            initDocumentManagerComponent(this);
         }
     }
 
-    createDocument(content: string, filename: string) {
+    /**
+     * create document and add it into document array,
+     * also check if filename already exists
+     * @param content document value
+     * @param filename 
+     * @returns true if created, false if filename already exists
+     */
+    createDocument(content: string, filename: string): boolean {
+        if (this.ifFilenameExists(filename))
+            return false;
         const CoqDocument = this.manager.getDocumentConstructor();
         const doc = new CoqDocument(content, filename, this.manager.options.content_type);
         this.documents.push(doc);
         if (this.setDocs) // ***TODO
             this.setDocs([...this.documents]);
+        return true;
     }
 
     deleteDocument(doc: CoqDocument) {
@@ -36,10 +57,10 @@ export class CoqDocumentManager {
         doc.delete();
     }
 
-    deleteAllDocuments() {
+    ifFilenameExists(filename: string): boolean {
         for (const doc of this.documents)
-            doc.delete();
-        this.documents.splice(0);
-        this.manager.tab_manager.closeAll();
+            if (doc.getFilename() === filename)
+                return true;
+        return false;
     }
 }

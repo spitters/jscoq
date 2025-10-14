@@ -9,18 +9,22 @@ export interface ICoqDocumentConstructor {
 export class CoqDocument {
     protected uri : string;
     protected version : number;
-    protected content_type : content;
     protected filename : string;
     protected content : string;
+    protected content_type : content;
     protected preprocess : (text: string) => string;
 
     constructor(content: string, filename: string, content_type: content) {
-        this.uri = `file:///src/${filename}`;
-        this.version = 0;
+        this.version = 1;
         this.content_type = content_type;
         this.filename = filename;
         this.content = content;
+        this.createUri();
         this.preprocess = this.getPreProcessFunc();
+    }
+    
+    protected createUri() {
+        this.uri = `file:///src/${this.filename}`;
     }
 
     update(value: string, notify?: boolean) {
@@ -54,7 +58,7 @@ export class CoqDocument {
      * @param {string} text
      */
     protected markdownPreprocess(text: string) {
-        let wsfill = s => s.replace(/[^\n]/g, ' ');
+        let wsfill = (s: string) => s.replace(/[^\n]/g, ' ');
         return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
                    .join('');
     }

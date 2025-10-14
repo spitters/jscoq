@@ -1,10 +1,6 @@
 import { Octokit } from "@octokit/core";
 import { useEffect, useState, Dispatch, SetStateAction, ChangeEvent } from "react";
-
-interface Gist {
-  setFiles(files: File[]): void;
-  getFiles(): File[];
-}
+import { Gist } from "./Gist"
 
 /**
  * documentation :
@@ -36,14 +32,6 @@ function Notif({ notif, setNotif }: NotifProps) {
 
 function makeErrorMessage(err: any) {
   return "Error " + err.status + " " + err.message;
-}
-
-function filesToOptions(files: File[]) {
-  let optionsFiles: { [key: string]: { content: string } } = {};
-  files.map((f, i) => {
-    optionsFiles[f.filename] = { content: f.content };
-  });
-  return optionsFiles;
 }
 
 type InputProps = {
@@ -100,7 +88,7 @@ function RequestButton({
             requestRoute,
             {
               ...requestOptions,
-              files: filesToOptions(gist.getFiles()),
+              files: gist.getFiles(),
             }
           )
           .then((res: any) => {
@@ -168,6 +156,7 @@ function buttonsElem(
       }}
       onFulfilled={() => {
         setNotif("Updated");
+        gist.removeDeletedFiles();
       }}
       onRejected={(err: any) => {
         console.log(err);
@@ -209,6 +198,8 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
           let files = Object.keys(rawFiles).map((f, i) => {
               return { idx: i, filename: f, content: rawFiles[f].content };
           });
+          if (files.length === 0)
+            setNotif("This gist does not contain any files.");
           gist.setFiles(files);
           setGistURL(result.data.html_url);
           // @ts-ignore
