@@ -1,7 +1,9 @@
+import { CoqManager } from "./coq-manager";
+
 export type content = 'plain' | 'markdown';
 
 export interface ICoqDocumentConstructor {
-    new(content: string, filename: string);
+    new(content: string, filename: string, content_type: content);
 }
 
 export class CoqDocument {
@@ -11,40 +13,32 @@ export class CoqDocument {
     protected filename : string;
     protected content : string;
     protected preprocess : (text: string) => string;
-    entryButton : HTMLButtonElement;
 
-    // isDirty : boolean;
-    // isUntitled: boolean;
-    // isClosed: boolean;
-    // coq?: CoqWorker;
-    // onCursorUpdate: (uri: string, offset : number) => void;
-
-    constructor(content: string, filename: string) {
+    constructor(content: string, filename: string, content_type: content) {
         this.uri = `file:///src/${filename}`;
         this.version = 0;
-        this.content_type = 'markdown'; // ***TODO from arg ? (manager.options.content_type)
+        this.content_type = content_type;
         this.filename = filename;
         this.content = content;
         this.preprocess = this.getPreProcessFunc();
     }
 
-    update(value: string) {
+    update(value: string, notify?: boolean) {
+        if (value === this.content) return;
         this.version++;
         this.content = value;
         // TODO notification document modified
+        if (notify) {
+            //
+        }
     }
 
-    save() {
-        //
-    }
-
-    delete() {
-        this.entryButton && this.entryButton.remove();
-    }
+    save() {}
+    delete() {}
 
     // Setup preprocess method for markdown
     protected getPreProcessFunc() : (text : string) => string {
-        // For now we disable it and use instead the server logic.
+        // TODO For now we disable it and use instead the server logic.
         let c = 'plain';
         // switch (this.content_type) {
         switch (c) {
@@ -115,16 +109,22 @@ function getElemValue(eId: string): string {
  * @param content_type 
  * @returns 
  */
-export function initDocument(eIds: string[],
-                             CoqDocument: ICoqDocumentConstructor,
-                             content_type: content) : CoqDocument {
-    
-    const extension = (content_type === 'plain') ? '.v' : '.mv';
+export function initDocument(manager: CoqManager,
+                             eIds: string[]) : CoqDocument {
+
+    const extension = (manager.options.content_type === 'plain') ? '.v' : '.mv';
+    const CoqDocument = manager.getDocumentConstructor();
     // from textarea
     let values: string[] = (eIds) ? eIds.map((e) => getElemValue(e)) : [];
     values = values.filter((v) => v !== null);
-    if (values.length)
-        return new CoqDocument(values.join('\n'), "fromTextarea" + extension);
-    else // if no textarea
-        return new CoqDocument("", "untitled1" + extension);
+    let filename: string,
+        content : string;
+    if (values.length) {
+        content = values.join('\n');
+        filename = "fromTextarea" + extension;
+    } else { // if no textarea
+        content = "";
+        filename = "untitled1" + extension;
+    }
+    return new CoqDocument(content, filename, manager.options.content_type);
 }

@@ -20,8 +20,10 @@ export interface ICoqEditor {
     openFile(file: File) : void
     focus() : void
 
-    doc: CoqDocument
-    // isVisible : boolean;
+    doc : CoqDocument
+    manager: CoqManager
+    connectWorker() : void;
+    close() : void
 }
 
 // Would be great to use, but not enough typing so far...

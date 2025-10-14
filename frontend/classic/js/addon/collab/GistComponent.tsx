@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/core";
-import { useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useState, Dispatch, SetStateAction, ChangeEvent } from "react";
 
 interface Gist {
   setFiles(files: File[]): void;
@@ -20,7 +20,7 @@ export type File = {
 
 type NotifProps = {
   notif: string;
-  setNotif: any;
+  setNotif: Dispatch<SetStateAction<string>>;
 };
 
 function Notif({ notif, setNotif }: NotifProps) {
@@ -123,10 +123,11 @@ function buttonsElem(
   gistID: string,
   setGistID: any,
   octokit: Octokit,
-  setNotif: any
+  gistURL: string,
+  setNotif: Dispatch<SetStateAction<string>>,
 ) {
   let linkButton = (
-    <a href={"https://gist.github.com/" + gistID} target="_blank">
+    <a href={gistURL} target="_blank">
       <button>Go to Gist</button>
     </a>
   );
@@ -188,12 +189,13 @@ type GistComponentProps = {
 };
 
 export default function GistComponent({ gist, startGistID }: GistComponentProps) {
-  const [token, setToken]: [string, any] = useState(
+  const [token, setToken]: [string, Dispatch<SetStateAction<string>>] = useState(
     ""
   );
   const octokitWrite = new Octokit({ auth: token });
-  const [gistID, setGistID]: [string, any] = useState(startGistID ?? "");
-  const [notif, setNotif]: [string, any] = useState("");
+  const [gistID, setGistID]: [string, Dispatch<SetStateAction<string>>] = useState(startGistID ?? "");
+  const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState("");
+  const [notif, setNotif]: [string, Dispatch<SetStateAction<string>>] = useState("");
 
   useEffect(() => {
     if (gistID) {
@@ -208,6 +210,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
               return { idx: i, filename: f, content: rawFiles[f].content };
           });
           gist.setFiles(files);
+          setGistURL(result.data.html_url);
           // @ts-ignore
           const url = new URL(location);
           url.searchParams.set("gist", gistID);
@@ -216,6 +219,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
         .catch((err) => {
           console.log(err);
           setNotif(makeErrorMessage(err));
+          setGistURL("");
         });
     }
   }, [gistID]);
@@ -225,6 +229,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     gistID,
     setGistID,
     octokitWrite,
+    gistURL,
     setNotif
   );
 

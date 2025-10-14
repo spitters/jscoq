@@ -33,9 +33,10 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // Addons
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
+import { CoqDocumentManager } from './coq-document-manager';
 import { CoqDocument, ICoqDocumentConstructor, initDocument, content } from './coq-document';
 import { CoqGistDocument } from './addon/collab/coq-gist-document';
-import { TabManager } from './coq-tab-manager';
+import { CoqTabManager } from './coq-tab-manager';
 
 type frontend = "pm" | "cm5" | "cm6"
 
@@ -77,8 +78,8 @@ export interface ManagerOptions {
 export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
-    documents: CoqDocument[];
-    tab_manager : TabManager;
+    doc_manager : CoqDocumentManager;
+    tab_manager : CoqTabManager;
     layout : CoqLayoutClassic;
     packages : PackageManager;
     navEnabled : boolean;
@@ -132,13 +133,8 @@ export class CoqManager {
             this.options.all_pkgs = {'+': this.options.all_pkgs};
         }
 
-        this.documents = [];
-        let doc = initDocument(elems, this.getDocumentConstructor(), this.options.content_type);
-        this.documents.push(doc);
-        if (this.options.multiple_editors) {
-            this.addDocumentButton();
-            this.createDocButton(doc);
-        }
+        this.doc_manager = new CoqDocumentManager(this, elems);
+        this.initTabManager();
 
         /* @ts-ignore */
         this.packages = null;
@@ -202,11 +198,32 @@ export class CoqManager {
     }
 
     // Setup Coq document
-    private getDocumentConstructor(): ICoqDocumentConstructor {
+    getDocumentConstructor(): ICoqDocumentConstructor {
         if (this.collab && this.collab.gist)
             return CoqGistDocument;
         else
             return CoqDocument;
+    }
+
+    // Setup tab manager
+    private initTabManager() {
+        if (this.tab_manager) return;
+
+        // Document processing
+        let onChange = debouncePend((doc: CoqDocument) => {
+            this.coq.update({ uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue() });
+        }, 200);
+
+        let onCursorUpdated = _.throttle(offset => {
+            console.log('cursor updated: ' + offset);
+            if (!onChange.pending) this.setGoalCursor(offset);
+        }, 200);
+
+        this.tab_manager = new CoqTabManager(this, onChange, onCursorUpdated);
+        if (this.doc_manager.documents.length > 0) {
+            let doc = this.doc_manager.documents[0];
+            this.tab_manager.setCurrent(this.tab_manager.createTab(doc));
+        }
     }
 
     /**
@@ -282,13 +299,10 @@ export class CoqManager {
     async openCollab(documentKey?) {
         // const { CollabP2P } = await import('./addon/collab/p2p');
         const { Gist } = await import('./addon/collab/Gist');
-        // await coq worker
-        this.when_ready.then( () => {
-            this.collab = {
-                // p2p: CollabP2P.attach(this, documentKey?.p2p),
-                gist: Gist.attach(this, documentKey?.gist)
-            }
-        })
+        this.collab = {
+            // p2p: CollabP2P.attach(this, documentKey?.p2p),
+            gist: Gist.attach(this, documentKey?.gist)
+        }
     }
 
     getLoadPath() {
@@ -376,21 +390,7 @@ export class CoqManager {
     coqReady() {
         this.layout.splash(this.version_info, "Coq worker is ready.", 'ready');
         this.enable();
-
-        // Document processing
-        let onChange = debouncePend((doc: CoqDocument) => {
-            this.coq.update({ uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue() });
-        }, 200);
-
-        let onCursorUpdated = _.throttle(offset => {
-            console.log('cursor updated: ' + offset);
-            if (!onChange.pending) this.setGoalCursor(offset);
-        }, 200);
-
-        this.tab_manager = new TabManager(this, onChange, onCursorUpdated);
-        if (this.documents.length > 0)
-            this.tab_manager.current_tab = this.tab_manager.createTab(this.documents[0]);
-
+        this.tab_manager.connectWorker()
         this.when_ready_resolver();
     }
 
@@ -398,7 +398,7 @@ export class CoqManager {
     async coqNotification( params : PublishDiagnosticParams ) {
         let { uri, version, diagnostic }  = params;
         // if document deleted then ignore
-        if (!this.documents.find((doc) => doc.getUri() === uri))
+        if (!this.doc_manager.documents.find((doc) => doc.getUri() === uri))
             return;
         // get editor with uri
         const editor = this.tab_manager.getEditorWithUri(uri);
@@ -757,64 +757,6 @@ export class CoqManager {
     async actionShareP2P() {
         if (!this.collab) await this.openCollab();
         this.collab.p2p.save();
-    }
-
-    createDocument(content: string, filename: string) {
-        const CoqDocument = this.getDocumentConstructor();
-        const doc = new CoqDocument(content, filename);
-        this.documents.push(doc);
-        if (this.options.multiple_editors)
-            this.createDocButton(doc);
-    }
-
-    private createDocButton(doc: CoqDocument) {
-        const parent = document.getElementById('documents');
-        let button = document.createElement('button');
-        button.classList.add('docButton');
-        button.addEventListener('click', (ev: MouseEvent) => {
-            this.tab_manager.createTab(doc);
-        });
-        button.innerText = doc.getFilename();
-        parent.appendChild(button);
-        doc.entryButton = button;
-    }
-
-    /**
-     * button to add document
-     */
-    addDocumentButton() {
-        const parent_id = 'documents';
-        let parent = document.getElementById(parent_id);
-        if (!parent) {
-            const wrapper_id = 'ide-wrapper'
-            const wrapper_elem = document.getElementById(wrapper_id);
-            if (!wrapper_elem)
-                throw new Error(`wrapper element '${wrapper_id}' not found`);
-            let p = document.createElement('div');
-            p.setAttribute('id', parent_id);
-            p.setAttribute('style', 'display: flex; flex-direction: column;');
-            if (wrapper_elem.parentElement && wrapper_elem.parentElement.tagName !== 'body')
-                wrapper_elem.parentElement.parentElement.insertBefore(p, wrapper_elem.parentElement);
-            else
-                wrapper_elem.parentElement.insertBefore(p, wrapper_elem);
-            parent = p;
-        }
-        let tab = document.createElement('button');
-        let onClick = ((ev: MouseEvent) => {
-            const n = this.documents.length + 1;
-            const filename = "untitled" + n + ((this.options.content_type === 'plain') ? '.v' : '.mv');
-            this.createDocument("", filename);
-        });
-        tab.addEventListener('click', onClick);
-        tab.innerText = 'Add document';
-        parent.insertBefore(tab, parent.firstChild);
-    }
-
-    deleteAllDocuments() {
-        for (const doc of this.documents)
-            doc.delete();
-        this.documents.splice(0);
-        this.tab_manager.closeAll();
     }
 
     // Aux function for goals2DOM

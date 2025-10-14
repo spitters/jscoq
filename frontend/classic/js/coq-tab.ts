@@ -6,6 +6,7 @@ export class CoqTab {
     tab: HTMLButtonElement;
     editor: ICoqEditor;
     container: HTMLDivElement;
+    private connected: boolean = false;
 
     constructor(doc: CoqDocument,
                 CoqEditor: ICoqEditorConstructor,
@@ -15,32 +16,52 @@ export class CoqTab {
                 parent: HTMLElement) {
         this.container = createEditorContainer();
         this.editor = new CoqEditor(doc, manager, this.container, onChange, onCursorUpdated);
-        // Send the document creation request.
-        manager.coq.newDoc({uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue()})
         // create tab button
         if (!manager.options.multiple_editors) {
             this.tab = null;
         } else {
-            let tab = document.createElement('button');
-            tab.classList.add('tab');
-            tab.addEventListener('click', (ev: MouseEvent) => {
-                let tab_manager = manager.tab_manager;
-                if (this !== tab_manager.current_tab) {
-                    // process old current
-                    tab_manager.current_tab.hide();
-                    tab_manager.current_tab.removeSelectedStyle();
-                    // process new current
-                    this.show();
-                    this.addSelectedStyle();
-                    tab_manager.current_tab = this;
-                }
-            });
-            tab.innerText = doc.getFilename();
+            let tab = this.createTabButton(doc, manager);
             this.tab = tab;
             parent.appendChild(tab);
         }
-        if (doc.entryButton)
-            doc.entryButton.setAttribute("disabled", "true");
+    }
+
+    private createTabButton(doc: CoqDocument, manager: CoqManager) {
+        let tab = document.createElement('button');
+        tab.classList.add('tab');
+        tab.innerText = doc.getFilename();
+        let tab_manager = manager.tab_manager;
+        tab.addEventListener('click', (ev: MouseEvent) => {
+            if (ev.target !== tab)
+                return;
+            if (this !== tab_manager.current_tab) {
+                tab_manager.setCurrent(this);
+            }
+        });
+        // to close tab
+        let onClickClose = (ev: MouseEvent) => {
+            tab_manager.closeTab(this);
+            if (this === tab_manager.current_tab) {
+                tab_manager.setCurrent((tab_manager.tabs.length > 0) ? tab_manager.tabs[0] : null);
+            }
+        };
+        let s = this.createCloseButton(onClickClose);
+        tab.appendChild(s);
+        return tab;
+    }
+
+    private createCloseButton(onClickClose: (ev: MouseEvent) => void) {
+        let s = document.createElement('span');
+        s.classList.add('closable-button');
+        s.textContent = '×';
+        s.addEventListener('click', onClickClose);
+        return s;
+    }
+
+    connectWorker() {
+        if (this.connected) return;
+        this.connected = true;
+        this.editor.connectWorker();
     }
 
     addSelectedStyle() {
@@ -64,5 +85,6 @@ export class CoqTab {
     close() {
         this.container.remove();
         this.tab.remove();
+        this.editor.close();
     }
 }
