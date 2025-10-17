@@ -8,6 +8,7 @@ Copyright: 2015--2016, MINES ParisTech
 Authors: Emilio J. Gallego Arias
          Shachar Itzhaky
          Benoît Pin
+         Hélène Guo
 
 Files: notes/*
 License: AGPL-3+ / CC-BY-SA 3.0 / LGPL-2.1+
@@ -16,6 +17,10 @@ Files: frontend/classic/images/checked.png
 License: CC-BY 3.0
 Comment:
   - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
+
+Files: frontend/classic/images/{chevrons-left,chevrons-right,trash-2}.svg
+License: MIT
+Comment: From https://feathericons.com/
 
 Files: frontend/classic/images/dl.png
 License: CC-BY 3.0
@@ -71,7 +76,7 @@ Comment: Other graphics are parts, and so licenced, as JsCoq.
 
 Files: examples/Stlc.html
 License: BSD
-Comment: From http://https://www.cis.upenn.edu/~bcpierce/sf/
+Comment: From https://www.cis.upenn.edu/~bcpierce/sf/
 
 Files: backend/jsoo/js_stub/marshal*.js
 Licence: LGPL2.0
