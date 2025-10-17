@@ -8,9 +8,10 @@
     <title>jsCoq – The Coq Theorem Prover Online IDE</title>
     <link rel="stylesheet" type="text/css" href="../dist/frontend/index.css">
     <style>
+      /* only cm5 */
       /* Allow some extra scroll space at the bottom & to the right */
       .CodeMirror-lines {
-        padding-bottom: 75% !important;
+        /* padding-bottom: 75% !important; */
         padding-right: 40px !important;
       }
     </style>
@@ -18,17 +19,17 @@
 
 <body class="jscoq-main">
   <div style="display: flex; flex-direction: row;">
-    <div id="documents" style="display: flex; flex-direction: column;">
+    <div id="documents" style="display: flex; flex-direction: column; position: relative;">
       <!-- documents list -->
     </div>
-    <div style="display: flex; flex-direction: column;">
+    <div style="flex: 1; display: flex; flex-direction: column; max-width: 100%; max-height: 100%;">
       <div id="gist-root">
         <!-- input & buttons for gist -->
       </div>
-      <div id="tabs" style="display: flex; flex-direction: row;">
+      <div id="tabs" style="display: flex; flex-direction: row; overflow-x: auto;">
         <!-- opened tabs list -->
       </div>
-      <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v">
+      <div id="ide-wrapper" class="toggled" data-filename="scratchpad.v" style="width: 100%;">
         <!-- Editor and panel are created here by CoqManager -->
         <div id="editors">
           <!-- editors created by CoqEditor -->

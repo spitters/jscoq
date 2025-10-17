@@ -54,7 +54,9 @@
    Handle multiple files of a gist. (@helguo, #401)
  - [editors] Have multiple documents and editors (@helguo, #402)
  - [editors] Improve architecture for multiple documents and editors.
-   Able to delete regular documents and close tabs (@helguo, #419)
+   Able to delete regular documents and close tabs. (@helguo, #419)
+ - [ui][gist] Improve architecture for document manager.
+   Able to delete gist file and other ui improvements. (@helguo #422)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

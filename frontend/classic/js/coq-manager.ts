@@ -33,10 +33,12 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // Addons
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
-import { CoqDocumentManager } from './coq-document-manager';
-import { CoqDocument, ICoqDocumentConstructor, initDocument, content } from './coq-document';
+import { CoqDocumentManager, ICoqDocumentManager } from './coq-document-manager';
+import { CoqDocument, ICoqDocumentConstructor, content } from './coq-document';
 import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { CoqTabManager } from './coq-tab-manager';
+import { initDocumentManagerComponent } from './DocumentManagerComponent';
+import { Gist } from './addon/collab/Gist';
 
 type frontend = "pm" | "cm5" | "cm6"
 
@@ -78,7 +80,7 @@ export interface ManagerOptions {
 export class CoqManager {
     options : ManagerOptions;
     coq : CoqWorker;
-    doc_manager : CoqDocumentManager;
+    doc_manager : ICoqDocumentManager;
     tab_manager : CoqTabManager;
     layout : CoqLayoutClassic;
     packages : PackageManager;
@@ -89,7 +91,7 @@ export class CoqManager {
     when_ready_resolver : () => void;
     project : any;
     version_info : string;
-    collab : any;
+    collab : { gist : Gist };
 
     /**
      * Creates an instance of CoqManager.
@@ -134,6 +136,8 @@ export class CoqManager {
         }
 
         this.doc_manager = new CoqDocumentManager(this, elems);
+        if (this.options.multiple_editors)
+            initDocumentManagerComponent(this);
         this.initTabManager();
 
         /* @ts-ignore */
@@ -296,12 +300,23 @@ export class CoqManager {
         // this.project = ProjectPanel.attach(this, pane, name);
     }
 
-    async openCollab(documentKey?) {
+    /* async */ openCollab(documentKey?) {
         // const { CollabP2P } = await import('./addon/collab/p2p');
-        const { Gist } = await import('./addon/collab/Gist');
+        // const { Gist } = await import('./addon/collab/Gist');
         this.collab = {
             // p2p: CollabP2P.attach(this, documentKey?.p2p),
             gist: Gist.attach(this, documentKey?.gist)
+        }
+    }
+
+    isCollabOpened(): boolean {
+        return this.collab && this.collab.gist !== null;
+    }
+
+    closeCollab() {
+        if (this.isCollabOpened()) {
+            this.collab.gist.close();
+            this.collab = { gist : null };
         }
     }
 
@@ -748,7 +763,7 @@ export class CoqManager {
         }
     }
 
-    editorActionHandler(action) {
+    /* editorActionHandler(action) {
         switch (action.type) {
         case 'share-p2p': this.actionShareP2P(); break;
         }
@@ -757,7 +772,7 @@ export class CoqManager {
     async actionShareP2P() {
         if (!this.collab) await this.openCollab();
         this.collab.p2p.save();
-    }
+    } */
 
     // Aux function for goals2DOM
     flatLength(l) {
