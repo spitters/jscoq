@@ -40,7 +40,22 @@ export interface CoqInitOptions {
   lib_init?: string[]
 }
 
-export interface DocumentParams {
+export interface TextDocumentIdentifier {
+    uri: string
+}
+
+export interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
+    version: number
+}
+
+export interface TextDocumentItem {
+  uri: string,
+  languageId : 'markdown' | 'rocq',
+  version: number,
+  text: string
+}
+
+export interface UpdateDocumentParams {
   uri: string,
   version: number,
   raw: string
@@ -283,13 +298,17 @@ export class CoqWorker {
         this.sendCommand(["Init", opts]);
     }
 
-    newDoc(docp : DocumentParams) {
-        this.sendCommand(["NewDoc", docp])
+    openDoc(docp : TextDocumentItem) {
+        this.sendCommand(["OpenDoc", docp])
     }
 
-    update(docp : DocumentParams) {
+    update(docp : UpdateDocumentParams) {
         this.sendCommand(["Update", docp]);
         this.interrupt();
+    }
+
+    closeDoc(docp : TextDocumentIdentifier) {
+        this.sendCommand(["CloseDoc", docp])
     }
 
     loadPkg(url) {

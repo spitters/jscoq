@@ -117,10 +117,11 @@ export class CoqProseMirror implements ICoqEditor {
 
     connectWorker() {
         // Send the document creation request.
-        this.manager.coq.newDoc({
+        this.manager.coq.openDoc({
             uri:     this.doc.getUri(),
+            languageId : "rocq",
             version: this.doc.getVersion(),
-            raw:     this.doc.getRawValue()
+            text:     this.doc.getRawValue()
         });
     }
 

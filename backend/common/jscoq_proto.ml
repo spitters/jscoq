@@ -89,8 +89,9 @@ end
 (* Main RPC calls *)
 type jscoq_cmd =
   | Init    of init_options
-  | NewDoc  of { uri : Fleche_lsp.JLang.LUri.File.t; version : int; raw : string }
+  | OpenDoc of { uri : Fleche_lsp.JLang.LUri.File.t; languageId : string; version : int; text : string }
   | Update  of { uri : Fleche_lsp.JLang.LUri.File.t; version : int; raw : string }
+  | CloseDoc of { uri : Fleche_lsp.JLang.LUri.File.t }
 
   | Request of { id: int; method_ : Method.t Request.t [@key "method"] }
 

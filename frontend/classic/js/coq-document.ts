@@ -8,6 +8,7 @@ export interface ICoqDocumentConstructor {
 
 export class CoqDocument {
     protected uri : string;
+    protected languageId : 'rocq' | 'markdown';
     protected version : number;
     protected filename : string;
     protected content : string;
@@ -25,6 +26,7 @@ export class CoqDocument {
     
     protected createUri() {
         this.uri = `file:///src/${this.filename}`;
+        this.languageId = this.uri.endsWith(".v") ? "rocq" : 'markdown';
     }
 
     update(value: string, notify?: boolean) {
@@ -65,6 +67,11 @@ export class CoqDocument {
 
     getUri() {
         return this.uri;
+    }
+    
+    /// Use TS getters?
+    getLanguageId() {
+        return this.languageId;
     }
 
     getVersion() {
