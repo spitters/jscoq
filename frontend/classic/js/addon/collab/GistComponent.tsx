@@ -123,14 +123,14 @@ function buttonsElem(
   let createButton = (
     <RequestButton
       gist={gist}
-      text={"Create"}
+      text={"Save as new gist"}
       octokit={octokit}
       requestRoute={"POST /gists"}
       requestOptions={{
         headers: { "X-GitHub-Api-Version": "2022-11-28" },
       }}
       onFulfilled={(result: any) => {
-        setNotif("Created");
+        setNotif("Gist Created");
         setGistID(result.data.id);
         /* @ts-ignore */
         const url = new URL(location);
@@ -147,7 +147,7 @@ function buttonsElem(
   let updateButton = (
     <RequestButton
       gist={gist}
-      text={"Update"}
+      text={"Save gist"}
       octokit={octokit}
       requestRoute={"PATCH /gists/" + gistID}
       requestOptions={{
@@ -155,7 +155,7 @@ function buttonsElem(
         headers: { "X-GitHub-Api-Version": "2022-11-28" },
       }}
       onFulfilled={() => {
-        setNotif("Updated");
+        setNotif("Gist Updated");
         gist.removeDeletedFiles();
       }}
       onRejected={(err: any) => {

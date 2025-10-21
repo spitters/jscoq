@@ -78,7 +78,7 @@ export class CoqTabManager {
     }
 
     createTab(doc: CoqDocument) {
-        const CoqEditor = this.manager.getEditorConstructor(this.manager.options.frontend);
+        const CoqEditor = this.manager.getEditorConstructor();
         let tab = new CoqTab(doc,
                              CoqEditor,
                              this.onChange,

@@ -27,6 +27,7 @@ import { CoqLayoutClassic } from './coq-layout-classic';
 import { ICoqEditorConstructor } from './coq-editor';
 import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
+import { CoqEditorMdView } from './coq-editor-mdview';
 import { CoqIdentifier } from '../../../backend/coq-identifier';
 
 // Addons
@@ -39,7 +40,7 @@ import { CoqTabManager } from './coq-tab-manager';
 import { initDocumentManagerComponent } from './DocumentManagerComponent';
 import { Gist } from './addon/collab/Gist';
 
-type frontend = "pm" | "cm6"
+type frontend = "pm" | "cm6" | "mdview";
 
 /**
  * Coq Document Manager, client-side.
@@ -190,10 +191,11 @@ export class CoqManager {
     }
 
     // Setup the Coq editor.
-    getEditorConstructor(frontend : frontend) : ICoqEditorConstructor {
-        switch (frontend) {
+    getEditorConstructor(frontend? : frontend) : ICoqEditorConstructor {
+        switch (frontend ?? this.options.frontend) {
         case 'pm':  return CoqProseMirror;
         case 'cm6': return CoqCodeMirror6;
+        case 'mdview': return CoqEditorMdView;
         default:
             throw new Error(`invalid frontend specification: '${frontend}'`);
         }
@@ -736,7 +738,7 @@ export class CoqManager {
     toolbarClickHandler(evt) {
         
         /* @ts-ignore */
-        this.editor.focus();
+        this.tab_manager.current_tab.editor.focus();
 
         switch (evt.target.name) {
         case 'to-cursor' :

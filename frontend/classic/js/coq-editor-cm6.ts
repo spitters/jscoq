@@ -14,27 +14,25 @@ const addDiag = StateEffect.define<{ from: number, to : number, d : Decoration }
 
 const diagField = StateField.define({
 
-  create() {
-      return RangeSet.empty;
-  },
+    create() {
+        return RangeSet.empty;
+    },
 
-  update(diags, tr) {
+    update(diags, tr) {
+        diags = diags.map(tr.changes);
+        for (let e of tr.effects) {
+            if (e.is(addDiag)) {
+                diags = diags.update({
+                    add: [e.value.d.range(e.value.from, e.value.to)]
+                })
+            } else if (e.is(clearDiag)) {
+                diags = RangeSet.empty;
+            }
+        };
+        return diags;
+    },
 
-      diags = diags.map(tr.changes);
-
-      for (let e of tr.effects) {
-          if (e.is(addDiag)) {
-              diags = diags.update({
-                  add: [e.value.d.range(e.value.from, e.value.to)]
-              })
-          } else if (e.is(clearDiag)) {
-              diags = RangeSet.empty;
-          }
-      };
-
-      return diags;
-  },
-  provide: f => EditorView.decorations.from(f)
+    provide: f => EditorView.decorations.from(f)
 })
 
 export class CoqCodeMirror6 implements ICoqEditor {
@@ -121,8 +119,8 @@ export class CoqCodeMirror6 implements ICoqEditor {
     openFile() {}
     focus() {}
     close() {
-        this.view.destroy();
         this.manager.coq.closeDoc({ uri: this.doc.uri });
+        this.view.destroy();
     }
 }
 
