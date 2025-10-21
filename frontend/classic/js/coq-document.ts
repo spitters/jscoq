@@ -1,38 +1,34 @@
 import { CoqManager } from "./coq-manager";
 
-export type content = 'plain' | 'markdown';
+export type languageId = 'rocq' | 'markdown';
 
 export interface ICoqDocumentConstructor {
-    new(content: string, filename: string, content_type: content);
+    new(content: string, filename: string);
 }
 
 export class CoqDocument {
-    protected uri : string;
-    protected languageId : 'rocq' | 'markdown';
-    protected version : number;
-    protected filename : string;
-    protected content : string;
-    protected content_type : content;
-    protected preprocess : (text: string) => string;
+    protected _uri : string;
+    protected _languageId : 'rocq' | 'markdown';
+    protected _version : number;
+    protected _filename : string;
+    protected _content : string;
 
-    constructor(content: string, filename: string, content_type: content) {
-        this.version = 1;
-        this.content_type = content_type;
-        this.filename = filename;
-        this.content = content;
+    constructor(content: string, filename: string) {
+        this._version = 1;
+        this._filename = filename;
+        this._content = content;
         this.createUri();
-        this.preprocess = this.getPreProcessFunc();
     }
     
     protected createUri() {
-        this.uri = `file:///src/${this.filename}`;
-        this.languageId = this.uri.endsWith(".v") ? "rocq" : 'markdown';
+        this._uri = `file:///src/${this.filename}`;
+        this._languageId = this.uri.endsWith(".v") ? "rocq" : 'markdown';
     }
 
     update(value: string, notify?: boolean) {
-        if (value === this.content) return;
-        this.version++;
-        this.content = value;
+        if (value === this.value) return;
+        this._version++;
+        this._content = value;
         // TODO notification document modified
         if (notify) {
             //
@@ -42,56 +38,24 @@ export class CoqDocument {
     save() {}
     delete() {}
 
-    // Setup preprocess method for markdown
-    protected getPreProcessFunc() : (text : string) => string {
-        // TODO For now we disable it and use instead the server logic.
-        let c = 'plain';
-        // switch (this.content_type) {
-        switch (c) {
-        case 'plain':    return (x => x);
-        case 'markdown': return this.markdownPreprocess;
-        default:
-            throw new Error(`invalid content specification: '${this.content_type}'`);
-        }
-    }
-
-    /**
-     * Strip off plain text, leaving the Coq text.
-     * @param {string} text
-     */
-    protected markdownPreprocess(text: string) {
-        let wsfill = (s: string) => s.replace(/[^\n]/g, ' ');
-        return text.split(/```([^]*?)```/g).map((x, i) => i & 1 ? x : wsfill(x))
-                   .join('');
-    }
-
-    getUri() {
-        return this.uri;
+    get uri() {
+        return this._uri;
     }
     
-    /// Use TS getters?
-    getLanguageId() {
-        return this.languageId;
+    get languageId() {
+        return this._languageId;
     }
 
-    getVersion() {
-        return this.version;
+    get version() {
+        return this._version;
     }
 
-    getContentType() {
-        return this.content_type;
+    get filename() {
+        return this._filename;
     }
 
-    getFilename() {
-        return this.filename;
-    }
-
-    getValue() {
-        return this.content;
-    }
-    
-    getRawValue() {
-        return this.preprocess(this.content);
+    get value() {
+        return this._content;
     }
 }
 
@@ -123,7 +87,7 @@ function getElemValue(eId: string): string {
 export function initDocument(manager: CoqManager,
                              eIds: string[]) : CoqDocument {
 
-    const extension = (manager.options.content_type === 'plain') ? '.v' : '.mv';
+    const extension = (manager.options.languageId === 'rocq') ? '.v' : '.mv';
     const CoqDocument = manager.getDocumentConstructor();
     // from textarea
     let values: string[] = (eIds) ? eIds.map((e) => getElemValue(e)) : [];
@@ -137,5 +101,5 @@ export function initDocument(manager: CoqManager,
         content = "";
         filename = "untitled1" + extension;
     }
-    return new CoqDocument(content, filename, manager.options.content_type);
+    return new CoqDocument(content, filename);
 }

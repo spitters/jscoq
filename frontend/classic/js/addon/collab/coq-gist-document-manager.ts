@@ -21,7 +21,7 @@ export class CoqGistDocumentManager extends CoqDocumentManager {
 
     deleteDocument(doc: CoqDocument) {
         super.deleteDocument(doc);
-        this.files[doc.getFilename()] = null;
+        this.files[doc.filename] = null;
     };
 
     private deleteAllDocuments() {
@@ -47,7 +47,7 @@ export class CoqGistDocumentManager extends CoqDocumentManager {
                 this.deleted_files.push(fn);
         }
         for (const doc of this.documents) {
-            this.files[doc.getFilename()] = { content: doc.getValue() };
+            this.files[doc.filename] = { content: doc.value };
         }
         return this.files;
     }
