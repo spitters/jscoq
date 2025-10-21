@@ -194,19 +194,13 @@ let jscoq_execute =
       out_fn @@ Ready ()
     | Error _ -> ())
 
-  | NewDoc { uri; version; raw } ->
+  | OpenDoc { uri; languageId; version; text } ->
     let io = lsp_cb in
     let workspace = get_ws () in
     let init = !root_state in
     let files = Coq.Files.make () in
     let env = Fleche.Doc.Env.make ~init ~workspace ~files in
-    (* XXX Fixme! *)
-    let languageId = match Filename.extension (Lang.LUri.File.to_string_file uri) with
-      | ".v" -> "rocq"
-      | ".mv" -> "markdown"
-      | _ -> "rocq"
-    in
-    Fleche.Theory.open_ ~io ~token ~env ~uri ~languageId ~version ~raw;
+    Fleche.Theory.open_ ~io ~token ~env ~uri ~languageId ~version ~raw:text;
     try_check ~token;
     ()
 
@@ -215,6 +209,9 @@ let jscoq_execute =
     let _stale_request : Int.Set.t = Fleche.Theory.change ~io ~token ~uri ~version ~raw in
     try_check ~token;
     ()
+
+  | CloseDoc { uri } ->
+    Fleche.Theory.close ~uri
 
   | Request { id; method_ } ->
     let { Request.uri; loc = _; v = _ } = method_ in
