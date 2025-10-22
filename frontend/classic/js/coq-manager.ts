@@ -103,7 +103,7 @@ export class CoqManager {
 
         // Default options
         this.options = {
-            frontend: 'cm6',
+            frontend:   'cm6',
             languageId: 'markdown',
             prelaunch:  false,
             prelude:    true,
