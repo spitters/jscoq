@@ -150,7 +150,7 @@ export class CoqProseMirror implements ICoqEditor {
     openFile() {}
     focus() {}
 
-    close() {
+    destroy() {
         this.manager.coq.closeDoc({ uri: this.doc.uri });
         this.view.destroy();
     }

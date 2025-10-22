@@ -118,7 +118,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
-    close() {
+    destroy() {
         this.manager.coq.closeDoc({ uri: this.doc.uri });
         this.view.destroy();
     }

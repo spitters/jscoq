@@ -71,13 +71,15 @@ export class CoqTab {
                onCursorUpdated: (offset: number) => void) {
         const doc = this.editor.doc;
         // remove current editor
-        this.editor.close(false);
+        this.editor.destroy();
+        this.connected = false
         this.container.replaceChildren();
         // create new editor
         const frontend = (this.editor instanceof CoqEditorMdView) ? 'cm6' : 'mdview';
         const CoqEditor = manager.getEditorConstructor(frontend);
         const editor = new CoqEditor(doc, manager, this.container, onChange, onCursorUpdated);
         this.editor = editor;
+        this.connectWorker();
     }
 
     addSelectedStyle() {
@@ -101,6 +103,6 @@ export class CoqTab {
     close() {
         this.container.remove();
         this.tab.remove();
-        this.editor.close();
+        this.editor.destroy();
     }
 }

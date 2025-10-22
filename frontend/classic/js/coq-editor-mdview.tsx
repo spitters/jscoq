@@ -5,7 +5,7 @@ import { CoqDocument } from "./coq-document";
 
 import { Root, createRoot } from 'react-dom/client';
 import Markdown from 'react-markdown'
-import CodeMirror, { EditorView, lineNumbers } from '@uiw/react-codemirror';
+import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.css';
@@ -49,7 +49,7 @@ export class CoqEditorMdView implements ICoqEditor {
                 rehypePlugins={[rehypeKatex]}
                 components={this.codeToCodeMirror(onChange, onCursorUpdated)}
             >
-                {this.doc.getValue()}
+                {this.doc.value}
             </Markdown>
         );
     }
@@ -69,7 +69,6 @@ export class CoqEditorMdView implements ICoqEditor {
                 const lang = className.slice('language-'.length);
                 const id = idx++;
                 let extensions = [
-                    // lineNumbers(),
                     EditorView.updateListener.of(v => {
                         if (v.selectionSet) {
                             this.currentSubEditor = id;
@@ -116,7 +115,7 @@ export class CoqEditorMdView implements ICoqEditor {
     splitDoc() {
         let parts: (string | number)[] = [];
         let start = 0;
-        let doc = this.doc.getValue();
+        let doc = this.doc.value;
         for (const { id, position, language } of this.subEditors) {
             const codeStart = `\`\`\`${language}\n`,
                   codeEnd   = '\n\`\`\`',
@@ -150,16 +149,15 @@ export class CoqEditorMdView implements ICoqEditor {
     connectWorker() {
         // Send the document creation request.
         this.manager.coq.openDoc({
-            uri:        this.doc.getUri(),
-            languageId: this.doc.getLanguageId(),
-            version:    this.doc.getVersion(),
-            text:       this.doc.getRawValue()
+            uri:        this.doc.uri,
+            languageId: this.doc.languageId,
+            version:    this.doc.version,
+            text:       this.doc.value
         });
     }
 
-    close(disconnect : boolean = true): void {
-        if (disconnect)
-            this.manager.coq.closeDoc({ uri: this.doc.getUri() });
+    destroy(): void {
+        this.manager.coq.closeDoc({ uri: this.doc.uri });
         this.root.unmount();
     }
 
