@@ -6,7 +6,7 @@ export class CoqGistDocument extends CoqDocument {
         super(content, filename);
     }
 
-    protected createUri() {
-        this._uri = `gist:///src/${this.filename}`;
-    }
+    // protected createUri() {
+    //     this._uri = `gist:///src/${this.filename}`;
+    // }
 }

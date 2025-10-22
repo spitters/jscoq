@@ -69,7 +69,7 @@ export class CoqEditorMdView implements ICoqEditor {
                 const lang = className.slice('language-'.length);
                 const id = idx++;
                 let extensions = [
-                    lineNumbers(),
+                    // lineNumbers(),
                     EditorView.updateListener.of(v => {
                         if (v.selectionSet) {
                             this.currentSubEditor = id;
@@ -90,7 +90,7 @@ export class CoqEditorMdView implements ICoqEditor {
                 return <CodeMirror
                     key={id}
                     value={text}
-                    basicSetup={true}
+                    basicSetup={false}
                     editable={true}
                     extensions={extensions}
                     onCreateEditor={(v, s) => {

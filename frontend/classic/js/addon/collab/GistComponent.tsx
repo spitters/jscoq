@@ -182,8 +182,9 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     ""
   );
   const octokitWrite = new Octokit({ auth: token });
+  const gistHomeURL = "https://gist.github.com/";
   const [gistID, setGistID]: [string, Dispatch<SetStateAction<string>>] = useState(startGistID ?? "");
-  const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState("");
+  const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState(gistHomeURL);
   const [notif, setNotif]: [string, Dispatch<SetStateAction<string>>] = useState("");
 
   useEffect(() => {
@@ -210,7 +211,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
         .catch((err) => {
           console.log(err);
           setNotif(makeErrorMessage(err));
-          setGistURL("");
+          setGistURL(gistHomeURL);
         });
     }
   }, [gistID]);
