@@ -65,7 +65,7 @@ export class CoqCodeMirror6 implements ICoqEditor {
                       onChange(this.doc);
                   }})
             ];
-        var state = EditorState.create( { doc: doc.getValue(), extensions } );
+        var state = EditorState.create( { doc: doc.value, extensions } );
 
         this.view = new EditorView(
             { state,
@@ -81,10 +81,10 @@ export class CoqCodeMirror6 implements ICoqEditor {
     connectWorker() {
         // Send the document creation request.
         this.manager.coq.openDoc({
-            uri:     this.doc.getUri(),
-            languageId: this.doc.getLanguageId(),
-            version: this.doc.getVersion(),
-            text:     this.doc.getRawValue()
+            uri:        this.doc.uri,
+            languageId: this.doc.languageId,
+            version:    this.doc.version,
+            text:       this.doc.value
         });
     }
 
@@ -120,7 +120,10 @@ export class CoqCodeMirror6 implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
-    close() {}
+    close() {
+        this.view.destroy();
+        this.manager.coq.closeDoc({ uri: this.doc.uri });
+    }
 }
 
 // Local Variables:

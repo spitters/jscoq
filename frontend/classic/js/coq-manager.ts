@@ -25,7 +25,6 @@ import { CoqLayoutClassic } from './coq-layout-classic';
 
 // Editors
 import { ICoqEditorConstructor } from './coq-editor';
-import { CoqCodeMirror5 } from './coq-editor-cm5';
 import { CoqCodeMirror6 } from './coq-editor-cm6';
 import { CoqProseMirror } from './coq-editor-pm';
 import { CoqIdentifier } from '../../../backend/coq-identifier';
@@ -34,13 +33,13 @@ import { CoqIdentifier } from '../../../backend/coq-identifier';
 // import { CoqContextualInfo } from './contextual-info.js';
 import { CompanyCoq }  from './addon/company-coq.js';
 import { CoqDocumentManager, ICoqDocumentManager } from './coq-document-manager';
-import { CoqDocument, ICoqDocumentConstructor, content } from './coq-document';
+import { CoqDocument, ICoqDocumentConstructor, languageId } from './coq-document';
 import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { CoqTabManager } from './coq-tab-manager';
 import { initDocumentManagerComponent } from './DocumentManagerComponent';
 import { Gist } from './addon/collab/Gist';
 
-type frontend = "pm" | "cm5" | "cm6"
+type frontend = "pm" | "cm6"
 
 /**
  * Coq Document Manager, client-side.
@@ -53,7 +52,7 @@ type frontend = "pm" | "cm5" | "cm6"
  */
 export interface ManagerOptions {
     backend: backend,
-    content_type: content,
+    languageId: languageId,
     frontend: frontend,
     prelaunch: boolean,
     prelude: boolean,
@@ -104,8 +103,8 @@ export class CoqManager {
 
         // Default options
         this.options = {
-            frontend: 'cm5',
-            content_type: 'markdown',
+            frontend:   'cm6',
+            languageId: 'markdown',
             prelaunch:  false,
             prelude:    true,
             debug:      true,
@@ -194,7 +193,6 @@ export class CoqManager {
     getEditorConstructor(frontend : frontend) : ICoqEditorConstructor {
         switch (frontend) {
         case 'pm':  return CoqProseMirror;
-        case 'cm5': return CoqCodeMirror5;
         case 'cm6': return CoqCodeMirror6;
         default:
             throw new Error(`invalid frontend specification: '${frontend}'`);
@@ -215,7 +213,7 @@ export class CoqManager {
 
         // Document processing
         let onChange = debouncePend((doc: CoqDocument) => {
-            this.coq.update({ uri: doc.getUri(), version: doc.getVersion(), raw: doc.getRawValue() });
+            this.coq.update({ uri: doc.uri, version: doc.version, raw: doc.value });
         }, 200);
 
         let onCursorUpdated = _.throttle(offset => {
@@ -413,14 +411,14 @@ export class CoqManager {
     async coqNotification( params : PublishDiagnosticParams ) {
         let { uri, version, diagnostic }  = params;
         // if document deleted then ignore
-        if (!this.doc_manager.documents.find((doc) => doc.getUri() === uri))
+        if (!this.doc_manager.documents.find((doc) => doc.uri === uri))
             return;
         // get editor with uri
         const editor = this.tab_manager.getEditorWithUri(uri);
 
         console.log("Diags received: " + diagnostic.length.toString());
 
-        if (editor.doc.getVersion() > version) {
+        if (editor.doc.version > version) {
             console.log("Discarding obsolete diagnostics :/ :/");
             return;
         }
@@ -649,7 +647,7 @@ export class CoqManager {
         const editor = this.tab_manager.current_tab.editor;
         offset ??= editor.getCursorOffset();
         this.layout.waiting_for_goals(offset);
-        let resp = await this.coq.sendRequest(editor.doc.getUri(), offset, ['Goals']);
+        let resp = await this.coq.sendRequest(editor.doc.uri, offset, ['Goals']);
         if (resp[1])
             this.layout.update_goals(resp[1]);
     }

@@ -74,7 +74,7 @@ export class CoqProseMirror implements ICoqEditor {
 
         this.doc = doc;
         this.manager = manager;
-        var docNode = defaultMarkdownParser.parse(doc.getValue());
+        var docNode = defaultMarkdownParser.parse(doc.value);
 
         this.view =
             new EditorView(container, {
@@ -118,10 +118,10 @@ export class CoqProseMirror implements ICoqEditor {
     connectWorker() {
         // Send the document creation request.
         this.manager.coq.openDoc({
-            uri:     this.doc.getUri(),
-            languageId : "rocq",
-            version: this.doc.getVersion(),
-            text:     this.doc.getRawValue()
+            uri:        this.doc.uri,
+            languageId: "rocq",
+            version:    this.doc.version,
+            text:       this.doc.value
         });
     }
 
@@ -149,7 +149,10 @@ export class CoqProseMirror implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
-    close() {}
+    close() {
+        this.view.destroy();
+        this.manager.coq.closeDoc({ uri: this.doc.uri });
+    }
 
     static process_node(acc) {
         return (node, pos, parent, index) => {

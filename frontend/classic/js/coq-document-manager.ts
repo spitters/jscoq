@@ -42,7 +42,7 @@ export class CoqDocumentManager implements ICoqDocumentManager {
         if (this.ifFilenameExists(filename))
             return false;
         const CoqDocument = this.manager.getDocumentConstructor();
-        const doc = new CoqDocument(content, filename, this.manager.options.content_type);
+        const doc = new CoqDocument(content, filename);
         this.documents.push(doc);
         if (this.setDocs) // ***TODO
             this.setDocs([...this.documents]);
@@ -59,7 +59,7 @@ export class CoqDocumentManager implements ICoqDocumentManager {
 
     ifFilenameExists(filename: string): boolean {
         for (const doc of this.documents)
-            if (doc.getFilename() === filename)
+            if (doc.filename === filename)
                 return true;
         return false;
     }

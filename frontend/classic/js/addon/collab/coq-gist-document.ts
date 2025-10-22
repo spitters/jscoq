@@ -1,14 +1,12 @@
-import { CoqDocument, content } from "../../coq-document";
+import { CoqDocument } from "../../coq-document";
 
 export class CoqGistDocument extends CoqDocument {
 
-    constructor(content: string, filename: string, content_type: content) {
-        super(content, filename, content_type);
+    constructor(content: string, filename: string) {
+        super(content, filename);
     }
 
     protected createUri() {
-        this.uri = `gist:///src/${this.filename}`;
+        this._uri = `gist:///src/${this.filename}`;
     }
-
-    // save()
 }

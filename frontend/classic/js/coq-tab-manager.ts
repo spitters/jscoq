@@ -73,7 +73,7 @@ export class CoqTabManager {
     }
 
     getEditorWithUri(uri: string) {
-        const tab = this.tabs.find((tab) => tab.editor.doc.getUri() === uri);
+        const tab = this.tabs.find((tab) => tab.editor.doc.uri === uri);
         return (tab) ? tab.editor : null;
     }
 

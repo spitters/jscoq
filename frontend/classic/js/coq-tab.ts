@@ -29,7 +29,7 @@ export class CoqTab {
     private createTabButton(doc: CoqDocument, manager: CoqManager) {
         let tab = document.createElement('button');
         tab.classList.add('tabButton');
-        tab.innerText = doc.getFilename();
+        tab.innerText = doc.filename;
         let tab_manager = manager.tab_manager;
         tab.addEventListener('click', (ev: MouseEvent) => {
             if (ev.target !== tab)

@@ -24,7 +24,7 @@ function DocumentButton({
   let src = getURL("frontend/classic/images/trash-2.svg").toString();
   return (
     <button className="docButton" onClick={(ev) => onClick(doc, ev)}>
-      {doc.getFilename()}
+      {doc.filename}
       <img src={src} className="deleteButton" onClick={() => onClose(doc)}/>
     </button>
   );
@@ -152,7 +152,7 @@ export function initDocumentManagerComponent(manager: CoqManager) {
   
   // delete doc
   let onDocButtonClose = (doc: CoqDocument) => {
-    if (window.confirm(`Are you sure you want to delete '${doc.getFilename()}' ?`)) {
+    if (window.confirm(`Are you sure you want to delete '${doc.filename}' ?`)) {
       // console.log("close");
       manager.doc_manager.deleteDocument(doc);
     }
@@ -161,7 +161,7 @@ export function initDocumentManagerComponent(manager: CoqManager) {
   let onAddDocClick = (fn: string) => {
     // console.log("add");
     if (!fn) {
-      const extension = (manager.options.content_type === 'plain') ? '.v' : '.mv';
+      const extension = (manager.options.languageId === 'rocq') ? '.v' : '.mv';
       let n = manager.doc_manager.documents.length + 1;
       let filename = "untitled" + n + extension;
       while (!manager.doc_manager.createDocument("", filename)) {

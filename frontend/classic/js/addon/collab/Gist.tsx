@@ -49,7 +49,7 @@ export class Gist {
 
   setFiles(files: File[]) {
     if (files.length === 0) {
-      let extension = this.coq.options.content_type === 'plain' ? '.v' : '.mv';
+      let extension = this.coq.options.languageId === 'rocq' ? '.v' : '.mv';
       files.push({ filename: "gistfile1" + extension, content: ""});
     }
     this.docs.replaceAllDocuments(files);
