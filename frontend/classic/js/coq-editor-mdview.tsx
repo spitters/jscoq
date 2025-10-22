@@ -157,8 +157,9 @@ export class CoqEditorMdView implements ICoqEditor {
         });
     }
 
-    close(): void {
-        this.manager.coq.closeDoc({ uri: this.doc.getUri() });
+    close(disconnect : boolean = true): void {
+        if (disconnect)
+            this.manager.coq.closeDoc({ uri: this.doc.getUri() });
         this.root.unmount();
     }
 

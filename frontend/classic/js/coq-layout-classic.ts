@@ -79,6 +79,7 @@ export class CoqLayoutClassic {
         <button name="to-cursor"   alt="To cursor (${kb.cursor})"   title="To cursor (${kb.cursor})"></button>
         <button name="interrupt"   alt="Interrupt Worker (Esc)"     title="Interrupt Worker (Esc)"></button>
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
+        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
       </span>
       <div class="exits right">
         <svg class="app-menu-button" viewBox="0 0 80 80">

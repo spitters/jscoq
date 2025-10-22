@@ -77,6 +77,11 @@ export class CoqTabManager {
         return (tab) ? tab.editor : null;
     }
 
+    switchView() {
+        if (this.current_tab)
+            this.current_tab.switchView(this.manager, this.onChange, this.onCursorUpdated);
+    }
+
     createTab(doc: CoqDocument) {
         const CoqEditor = this.manager.getEditorConstructor();
         let tab = new CoqTab(doc,

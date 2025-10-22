@@ -23,7 +23,7 @@ export interface ICoqEditor {
     doc : CoqDocument
     manager: CoqManager
     connectWorker() : void;
-    close() : void
+    close(disconnect? : boolean) : void
 }
 
 // Would be great to use, but not enough typing so far...

@@ -760,6 +760,10 @@ export class CoqManager {
         case 'reset':
             this.reset();
             break;
+
+        case 'editor':
+            this.tab_manager.switchView();
+            break;
         }
     }
 
