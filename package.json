@@ -32,6 +32,7 @@
     "buffer": "^4.9.2",
     "child-process-promise": "^2.2.1",
     "codemirror": "^5.65.20",
+    "@codemirror/language": "^6.6.0",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.3",
     "commander": "^5.1.0",

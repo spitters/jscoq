@@ -5,8 +5,7 @@ import { Diagnostic } from "../../../backend/coq-worker";
 import { ICoqEditor } from "./coq-editor";
 import { CoqDocument } from "./coq-document";
 import { CoqManager } from "./coq-manager";
-
-// import './mode/coq-mode.js';
+import { rocq } from "./mode/rocq-cm6";
 
 export const clearDiag = StateEffect.define<{}>({});
 export const addDiag = StateEffect.define<{ from: number, to : number, d : Decoration }>(
@@ -61,7 +60,8 @@ export class CoqCodeMirror6 implements ICoqEditor {
                       var newText = v.state.doc.toString();
                       this.doc.update(newText);
                       onChange(this.doc);
-                  }})
+                  }}),
+              rocq()
             ];
         var state = EditorState.create( { doc: doc.value, extensions } );
 
