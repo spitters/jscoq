@@ -123,14 +123,14 @@ function buttonsElem(
   let createButton = (
     <RequestButton
       gist={gist}
-      text={"Create"}
+      text={"Save as new gist"}
       octokit={octokit}
       requestRoute={"POST /gists"}
       requestOptions={{
         headers: { "X-GitHub-Api-Version": "2022-11-28" },
       }}
       onFulfilled={(result: any) => {
-        setNotif("Created");
+        setNotif("Gist Created");
         setGistID(result.data.id);
         /* @ts-ignore */
         const url = new URL(location);
@@ -147,7 +147,7 @@ function buttonsElem(
   let updateButton = (
     <RequestButton
       gist={gist}
-      text={"Update"}
+      text={"Save gist"}
       octokit={octokit}
       requestRoute={"PATCH /gists/" + gistID}
       requestOptions={{
@@ -155,7 +155,7 @@ function buttonsElem(
         headers: { "X-GitHub-Api-Version": "2022-11-28" },
       }}
       onFulfilled={() => {
-        setNotif("Updated");
+        setNotif("Gist Updated");
         gist.removeDeletedFiles();
       }}
       onRejected={(err: any) => {
@@ -182,8 +182,9 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
     ""
   );
   const octokitWrite = new Octokit({ auth: token });
+  const gistHomeURL = "https://gist.github.com/";
   const [gistID, setGistID]: [string, Dispatch<SetStateAction<string>>] = useState(startGistID ?? "");
-  const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState("");
+  const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState(gistHomeURL);
   const [notif, setNotif]: [string, Dispatch<SetStateAction<string>>] = useState("");
 
   useEffect(() => {
@@ -210,7 +211,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
         .catch((err) => {
           console.log(err);
           setNotif(makeErrorMessage(err));
-          setGistURL("");
+          setGistURL(gistHomeURL);
         });
     }
   }, [gistID]);

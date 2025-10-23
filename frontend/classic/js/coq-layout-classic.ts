@@ -79,6 +79,7 @@ export class CoqLayoutClassic {
         <button name="to-cursor"   alt="To cursor (${kb.cursor})"   title="To cursor (${kb.cursor})"></button>
         <button name="interrupt"   alt="Interrupt Worker (Esc)"     title="Interrupt Worker (Esc)"></button>
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
+        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
       </span>
       <div class="exits right">
         <svg class="app-menu-button" viewBox="0 0 80 80">
@@ -170,6 +171,12 @@ export class CoqLayoutClassic {
 
         this.onAction = evt => {};
         this.buttons.addEventListener('click', evt => this.onAction(evt));
+
+        // set "switch editor" button's img
+        const path = 'frontend/classic/images/';
+        const img = (options.frontend !== 'mdview' ? 'file-text.svg' : 'edit.svg');
+        const button = document.querySelector("#buttons button[name=editor]");
+        button.setAttribute("style", `background-image: url(${this._url(path + img)});`);
 
         this.menubtn.addEventListener('mousedown', () =>
             this.settings.toggle());

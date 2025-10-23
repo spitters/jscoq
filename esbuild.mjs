@@ -77,8 +77,11 @@ var frontend = watchContext(esbuild.context({
   platform: "browser",
   format: "esm",
   loader: {
-    '.png': 'binary',
-    '.svg': 'dataurl'
+    '.ttf'  : 'file',
+    '.woff' : 'file',
+    '.woff2': 'file',
+    '.png'  : 'binary',
+    '.svg'  : 'dataurl'
   },
   metafile: enableMeta,
   outdir: "dist/frontend",
