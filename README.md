@@ -234,7 +234,8 @@ See the `etc/notes/` directory for some random notes about the project.
 
 ### Core developer team
 
-- [Emilio Jesús Gallego Arias](https://www.irif.fr/~gallego/) , Inria, Université de Paris, IRIF
+- [Emilio Jesús Gallego Arias](https://x80.org/emilio/) , Picube, CNRS, Université de Paris, IRIF
+- Helene Guo , Picube, Inria, CNRS, Université de Paris, IRIF
 - [Shachar Itzhaky](https://cs.technion.ac.il/~shachari/) , Technion
 
 ### Past Contributors
