@@ -13,13 +13,12 @@ const check_packages = () => {
 const check_goals = (frontend : string) => {
 
   switch (frontend) {
-    // case 'cm5':
-    //   cy.get('.CodeMirror', { timeout: 5000 } )
-    //     .first()
-    //     .then((editor) => {
-    //       editor[0].CodeMirror.setCursor({ line: 19, ch: 4 });
-    //     });
-    //   break;
+    case 'mdview':
+      cy.get(':nth-child(4) > .cm-theme-light > .cm-editor > .cm-scroller > .cm-content > :nth-child(7)',
+              { timeout: 5000 } )
+        .click()
+        .click()
+        break;
 
     case 'pm':
         // TODO
@@ -42,7 +41,7 @@ const check_goals = (frontend : string) => {
 
 export function check_startup(backend : string, frontend : string ='cm6') {
   it('javascript backend successfully loads', () => {
-    cy.visit(`/?frontend=${frontend}&backend=${backend}`);
+    cy.visit(`/?backend=${backend}&frontend=${frontend}`);
 
     check_worker();
     check_packages();
