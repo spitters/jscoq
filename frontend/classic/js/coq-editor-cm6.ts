@@ -33,7 +33,7 @@ const diagField = StateField.define({
     },
 
     provide: f => EditorView.decorations.from(f)
-})
+});
 
 export class CoqCodeMirror6 implements ICoqEditor {
     private view : EditorView;
