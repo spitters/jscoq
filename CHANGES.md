@@ -57,6 +57,9 @@
    Able to delete regular documents and close tabs. (@helguo, #419)
  - [ui][gist] Improve architecture for document manager.
    Able to delete gist file and other ui improvements. (@helguo #422)
+ - [mdview][gist] Add Markdown view editor with a button to switch
+   between Markdown view editor and CodeMirror 6 editor.
+   Some improvements for gist. (@helguo #426)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

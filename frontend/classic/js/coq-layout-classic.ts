@@ -172,6 +172,12 @@ export class CoqLayoutClassic {
         this.onAction = evt => {};
         this.buttons.addEventListener('click', evt => this.onAction(evt));
 
+        // set "switch editor" button's img
+        const path = 'frontend/classic/images/';
+        const img = (options.frontend !== 'mdview' ? 'file-text.svg' : 'edit.svg');
+        const button = document.querySelector("#buttons button[name=editor]");
+        button.setAttribute("style", `background-image: url(${this._url(path + img)});`);
+
         this.menubtn.addEventListener('mousedown', () =>
             this.settings.toggle());
         this.settings.active.observe(active =>
