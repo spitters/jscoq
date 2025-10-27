@@ -2,40 +2,15 @@ import { Diagnostic } from "../../../backend";
 import { CoqManager } from "./coq-manager";
 import { ICoqEditor } from "./coq-editor";
 import { CoqDocument } from "./coq-document";
+import { addDiag, clearDiag, diagField } from "./coq-editor-cm6";
 
 import { Root, createRoot } from 'react-dom/client';
 import Markdown from 'react-markdown'
-import CodeMirror, { Decoration, EditorView, RangeSet, StateEffect, StateField } from '@uiw/react-codemirror';
+import { Decoration, EditorView } from "@codemirror/view";
+import CodeMirror from '@uiw/react-codemirror';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.css';
-
-const clearDiag = StateEffect.define<{}>({});
-const addDiag = StateEffect.define<{ from: number, to : number, d : Decoration }>(
-    { map: ({from, to, d}, change) => ({from: change.mapPos(from), to: change.mapPos(to), d}) });
-
-const diagField = StateField.define({
-
-    create() {
-        return RangeSet.empty;
-    },
-
-    update(diags, tr) {
-        diags = diags.map(tr.changes);
-        for (let e of tr.effects) {
-            if (e.is(addDiag)) {
-                diags = diags.update({
-                    add: [e.value.d.range(e.value.from, e.value.to)]
-                })
-            } else if (e.is(clearDiag)) {
-                diags = RangeSet.empty;
-            }
-        };
-        return diags;
-    },
-
-    provide: f => EditorView.decorations.from(f)
-});
 
 export class CoqEditorMdView implements ICoqEditor {
     doc: CoqDocument;
@@ -191,32 +166,8 @@ export class CoqEditorMdView implements ICoqEditor {
         });
     }
 
-    destroy(): void {
+    disconnectWorker() {
         this.manager.coq.closeDoc({ uri: this.doc.uri });
-        this.root.unmount();
-    }
-
-    private countPreviousOffset(id: number) {
-        if (id < 0 || id >= this.subEditors.length)
-            throw Error("invalid argument");
-        let offset = 0;
-        for (const p of this.parts) {
-            if (typeof p === "number")
-                if (p === id)
-                    return offset;
-                else
-                    offset += this.getSubEditorValue(p).length;
-            else
-                offset += p.length;
-        }
-        throw Error("incoherent editor.parts");
-    }
-
-    getCursorOffset(): number {
-        if (this.currentSubEditor === undefined)
-            return 0;
-        let currentOffset = this.subEditors[this.currentSubEditor].view.state.selection.main.head
-        return this.countPreviousOffset(this.currentSubEditor) + currentOffset;
     }
 
     clearDiagnostics(): void {
@@ -264,7 +215,34 @@ export class CoqEditorMdView implements ICoqEditor {
         }
     }
 
+    private countPreviousOffset(id: number) {
+        if (id < 0 || id >= this.subEditors.length)
+            throw Error("invalid argument");
+        let offset = 0;
+        for (const p of this.parts) {
+            if (typeof p === "number")
+                if (p === id)
+                    return offset;
+                else
+                    offset += this.getSubEditorValue(p).length;
+            else
+                offset += p.length;
+        }
+        throw Error("incoherent editor.parts");
+    }
+
+    getCursorOffset(): number {
+        if (this.currentSubEditor === undefined)
+            return 0;
+        let currentOffset = this.subEditors[this.currentSubEditor].view.state.selection.main.head
+        return this.countPreviousOffset(this.currentSubEditor) + currentOffset;
+    }
+
     configure(opts: any): void {}
     openFile(file: File): void {}
     focus(): void {}
+
+    destroy(): void {
+        this.root.unmount();
+    }
 }

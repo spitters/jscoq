@@ -23,6 +23,7 @@ export interface ICoqEditor {
     doc : CoqDocument
     manager: CoqManager
     connectWorker() : void;
+    disconnectWorker() : void;
     // Clean up the editor view, removing its element from the
     // document, unregistering event handlers, and notifying clients.
     destroy() : void
