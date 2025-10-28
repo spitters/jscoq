@@ -8,11 +8,11 @@ import { CoqManager } from "./coq-manager";
 
 // import './mode/coq-mode.js';
 
-const clearDiag = StateEffect.define<{}>({});
-const addDiag = StateEffect.define<{ from: number, to : number, d : Decoration }>(
+export const clearDiag = StateEffect.define<{}>({});
+export const addDiag = StateEffect.define<{ from: number, to : number, d : Decoration }>(
     { map: ({from, to, d}, change) => ({from: change.mapPos(from), to: change.mapPos(to), d}) });
 
-const diagField = StateField.define({
+export const diagField = StateField.define({
 
     create() {
         return RangeSet.empty;
@@ -86,6 +86,10 @@ export class CoqCodeMirror6 implements ICoqEditor {
         });
     }
 
+    disconnectWorker() {
+        this.manager.coq.closeDoc({ uri: this.doc.uri });
+    }
+
     clearDiagnostics() {
         var tr = { effects: clearDiag.of({}) };
         this.view.dispatch(tr);
@@ -118,8 +122,8 @@ export class CoqCodeMirror6 implements ICoqEditor {
     configure() {}
     openFile() {}
     focus() {}
+
     destroy() {
-        this.manager.coq.closeDoc({ uri: this.doc.uri });
         this.view.destroy();
     }
 }

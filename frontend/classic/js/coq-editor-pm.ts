@@ -125,6 +125,10 @@ export class CoqProseMirror implements ICoqEditor {
         });
     }
 
+    disconnectWorker() {
+        this.manager.coq.closeDoc({ uri: this.doc.uri });
+    }
+
     clearDiagnostics() {
         var tr = this.view.state.tr;
         tr.setMeta(coqDiags, "clear");
@@ -151,7 +155,6 @@ export class CoqProseMirror implements ICoqEditor {
     focus() {}
 
     destroy() {
-        this.manager.coq.closeDoc({ uri: this.doc.uri });
         this.view.destroy();
     }
 

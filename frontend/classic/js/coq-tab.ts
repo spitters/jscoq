@@ -66,20 +66,30 @@ export class CoqTab {
         this.editor.connectWorker();
     }
 
+    disconnectWorker() {
+        if (!this.connected)
+            return;
+        this.connected = false;
+        this.editor.disconnectWorker();
+    }
+
     switchView(manager: CoqManager,
                onChange: (doc: CoqDocument) => void,
                onCursorUpdated: (offset: number) => void) {
         const doc = this.editor.doc;
+        const connected = this.connected;
         // remove current editor
+        if (connected)
+            this.disconnectWorker();
         this.editor.destroy();
-        this.connected = false
         this.container.replaceChildren();
         // create new editor
         const frontend = (this.editor instanceof CoqEditorMdView) ? 'cm6' : 'mdview';
         const CoqEditor = manager.getEditorConstructor(frontend);
         const editor = new CoqEditor(doc, manager, this.container, onChange, onCursorUpdated);
         this.editor = editor;
-        this.connectWorker();
+        if (connected) // reconnect
+            this.connectWorker();
     }
 
     addSelectedStyle() {
@@ -103,6 +113,8 @@ export class CoqTab {
     close() {
         this.container.remove();
         this.tab.remove();
+        if (this.connected)
+            this.editor.disconnectWorker();
         this.editor.destroy();
     }
 }

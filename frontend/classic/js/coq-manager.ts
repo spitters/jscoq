@@ -73,7 +73,7 @@ export interface ManagerOptions {
     line_numbers: 'continue',
     coq: any, // options for coq and the editor, not the object themselves
     editor: any,
-    multiple_editors: boolean,
+    multiple_editors: boolean, // ***TODO remove after layout is fixed
     subproc?: CoqWorker
 }
 

@@ -7,14 +7,6 @@
 
     <title>jsCoq – The Coq Theorem Prover Online IDE</title>
     <link rel="stylesheet" type="text/css" href="../dist/frontend/index.css">
-    <style>
-      /* only cm5 */
-      /* Allow some extra scroll space at the bottom & to the right */
-      .CodeMirror-lines {
-        /* padding-bottom: 75% !important; */
-        padding-right: 40px !important;
-      }
-    </style>
   </head>
 
 <body class="jscoq-main">
@@ -49,9 +41,9 @@
     var jscoq_ids = ['editors'];
     var jscoq_opts = {
         backend: sp.get('backend') ?? ifHas('wa'),
-        frontend: sp.get('frontend') ?? "cm6",
+        frontend: sp.get('frontend'),
         subproc: sp.has('app'),
-        content_type: sp.get('content_type'),
+        languageId: sp.get('languageId'),
         node_modules_path: '../node_modules/',
         file_dialog: true,
         implicit_libs: true,
@@ -61,20 +53,8 @@
         theme: panel_theme
     };
 
-    var filename_key  = 'scratchpad.last_filename', // key in localStorage to get filename
-        default_fn    = 'playground',
-        wrapper_id    = 'ide-wrapper',
-        attr_filename = 'data-filename';
-    var last_filename = localStorage.getItem(filename_key),
-        wrapper_elem  = document.getElementById(wrapper_id)
-
     /* Global reference */
-    var coq, 
-        set_filename  = fn => wrapper_elem.setAttribute(attr_filename, fn);
-
-    if (sp.has('code'))     set_filename('');
-    else if (sp.has('fn'))  set_filename(sp.get('fn'));
-    else if (last_filename) set_filename(last_filename);
+    var coq;
 
     JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
       coq = res;
@@ -82,14 +62,10 @@
       if (sp.has('project'))     coq.openProject(sp.get('project'));
       if (sp.has('p2p'))         coq.openCollab({p2p: sp.get('p2p')});
       if (sp.has('gist'))        coq.openCollab({gist: sp.get('gist')});
-      if (sp.has('code'))
-        // TODO : only works with CM5, temporarily fix
-        coq.editor.load(sp.get('code'), sp.get('fn') || default_fn);
+      // if (sp.has('code'))
     });
     window.addEventListener('beforeunload', (event) => {
       event.preventDefault();
-      localStorage.setItem(filename_key,
-                           sp.get('fn') || wrapper_elem.getAttribute(attr_filename));
     });
   </script>
 </body>
