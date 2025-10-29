@@ -132,6 +132,7 @@ function buttonsElem(
       onFulfilled={(result: any) => {
         setNotif("Gist Created");
         setGistID(result.data.id);
+        gist.requestFulfilled(result);
         /* @ts-ignore */
         const url = new URL(location);
         url.searchParams.set("gist", gistID);
@@ -154,9 +155,9 @@ function buttonsElem(
         gist_id: gistID,
         headers: { "X-GitHub-Api-Version": "2022-11-28" },
       }}
-      onFulfilled={() => {
+      onFulfilled={(result: any) => {
         setNotif("Gist Updated");
-        gist.removeDeletedFiles();
+        gist.requestFulfilled(result);
       }}
       onRejected={(err: any) => {
         console.log(err);
@@ -234,7 +235,7 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
             <Input
               id={"input-id"}
               value={gistID}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setGistID(e.target.value.trim())}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setGistID(e.target.value)}
               label={"Gist ID:"}
               placeholder={"gist id"}
             />
@@ -244,13 +245,13 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
             <Input
               id={"input-token"}
               value={token}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setToken(e.target.value.trim())}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setToken(e.target.value)}
               label={"Gist Token:"}
               placeholder={"gist write token"}
               type={"password"}
             />
-            {allButtons.create}
             {allButtons.update}
+            {allButtons.create}
           </div>
         </div>
       </div>

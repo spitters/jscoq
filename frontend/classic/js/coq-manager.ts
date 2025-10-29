@@ -123,7 +123,7 @@ export class CoqManager {
             init_import: [],
             file_dialog: false,
             line_numbers: 'continue',
-            multiple_editors: true,
+            multiple_editors: false,
             coq:       { /* Coq option values */ },
             editor:    { /* codemirror options */ }
         };

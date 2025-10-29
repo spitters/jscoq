@@ -45,14 +45,15 @@ export class CoqDocumentManager implements ICoqDocumentManager {
         const doc = new CoqDocument(content, filename);
         this.documents.push(doc);
         if (this.setDocs) // ***TODO
-            this.setDocs([...this.documents]);
+            this.setDocs((docs) => [...docs, doc]);
         return true;
     }
 
     deleteDocument(doc: CoqDocument) {
         this.documents = this.documents.filter((d) => d !== doc);
         if (this.setDocs) // ***TODO
-            this.setDocs([...this.documents]);
+            this.setDocs((docs) => 
+                [...docs.filter((d) => d.filename !== doc.filename)]);
         this.manager.tab_manager.closeTabWithDoc(doc);
         doc.delete();
     }
