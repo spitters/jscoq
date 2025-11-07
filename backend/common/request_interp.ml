@@ -42,7 +42,7 @@ let from_execution (res : _ Coq.Protect.E.t) =
   | { r = Coq.Protect.R.Completed (Error _); feedback = _ } -> None
   | { r = Coq.Protect.R.Interrupted; feedback = _ } -> None
 
-let do_request ~token ~doc point (r : Method.t) =
+let do_request ~io ~token ~doc point (r : Method.t) =
   match r with
   | Method.Mode -> Answer.Void
   | Method.Goals ->
@@ -74,3 +74,17 @@ let do_request ~token ~doc point (r : Method.t) =
        the state resultin from checking the full document. *)
     let candidates = Nametab.completion_canditates (Libnames.qualid_of_string prefix) in
     Answer.Completion (List.map (fun x -> Pp.string_of_ppcmds (pr_extref x)) candidates)
+  | Method.SaveVo ->
+    match Fleche.Doc.save ~token ~doc with
+    | { r = Coq.Protect.R.Completed (Ok ()); feedback = _ } ->
+      let lvl = Fleche.Io.Level.Info in
+      Fleche.Io.Report.msg ~io ~lvl "Saved .vo file for %a" Lang.LUri.File.pp doc.uri;
+      Answer.Void
+    | { r = Coq.Protect.R.Completed (Error (User msg | Anomaly msg)); feedback = _ } ->
+      let lvl = Fleche.Io.Level.Error in
+      Fleche.Io.Report.msg ~io ~lvl "Error saving goals for %a: %a" Lang.LUri.File.pp doc.uri Pp.pp_with msg.msg;
+      Answer.Void
+    | { r = Coq.Protect.R.Interrupted; feedback = _ } ->
+      let lvl = Fleche.Io.Level.Error in
+      Fleche.Io.Report.msg ~io ~lvl "Error saving goals for %a: %s" Lang.LUri.File.pp doc.uri "interrupted";
+      Answer.Void

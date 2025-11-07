@@ -45,7 +45,7 @@ export class CoqLayoutClassic {
     menubtn : SVGElement
     settings : SettingsPanel;
     onToggle : (evt : any) => void;
-    onAction : (evt : any) => void;
+    onAction : (evt : any) => Promise<void>;
     log_levels : string[];
     log_level : number;
     outline : HTMLDivElement;
@@ -169,8 +169,8 @@ export class CoqLayoutClassic {
 
         this._setButtons(false); // starts disabled
 
-        this.onAction = evt => {};
-        this.buttons.addEventListener('click', evt => this.onAction(evt));
+        this.onAction = evt => { return Promise.resolve() };
+        this.buttons.addEventListener('click', async evt => await this.onAction(evt));
 
         // set "switch editor" button's img
         const path = 'frontend/classic/images/';
