@@ -79,6 +79,13 @@ function DocumentManagerComponent({
   // ***TODO
   (manager.doc_manager as CoqDocumentManager).setDocs = setDocs;
 
+  const handleFileInputKey = (e) => {
+    if (e.key === 'Enter') {
+      if(onAddDocClick(fn))
+        setFn("");
+    }
+  };
+
   let addButton = (
     <button onClick={() => {
         if (onAddDocClick(fn))
@@ -93,6 +100,7 @@ function DocumentManagerComponent({
       name="filename"
       placeholder="filename"
       value={fn}
+      onKeyDown={handleFileInputKey}
       onChange={(v) => setFn(v.target.value.trim())}
       // style={{ width: "160px" }}
     />
