@@ -79,6 +79,13 @@ function DocumentManagerComponent({
   // ***TODO
   (manager.doc_manager as CoqDocumentManager).setDocs = setDocs;
 
+  const handleFileInputKey = (e) => {
+    if (e.key === 'Enter') {
+      if(onAddDocClick(fn))
+        setFn("");
+    }
+  };
+
   let addButton = (
     <button onClick={() => {
         if (onAddDocClick(fn))
@@ -93,6 +100,7 @@ function DocumentManagerComponent({
       name="filename"
       placeholder="filename"
       value={fn}
+      onKeyDown={handleFileInputKey}
       onChange={(v) => setFn(v.target.value.trim())}
       // style={{ width: "160px" }}
     />
@@ -138,6 +146,11 @@ function DocumentManagerComponent({
   )
 }
 
+function getFileExtension(filename) {
+  if (!filename.includes('.') || filename.endsWith('.')) return '';
+  return filename.slice(filename.lastIndexOf('.') + 1);
+}
+
 export function initDocumentManagerComponent(manager: CoqManager) {
   // open doc
   let onDocButtonClick = (doc: CoqDocument, ev: MouseEvent) => {
@@ -149,17 +162,27 @@ export function initDocumentManagerComponent(manager: CoqManager) {
       tab = tab_manager.createTab(doc);
     tab_manager.setCurrent(tab);
   };
-  
+
   // delete doc
   let onDocButtonClose = (doc: CoqDocument) => {
     if (window.confirm(`Are you sure you want to delete '${doc.filename}' ?`)) {
-      // console.log("close");
       manager.doc_manager.deleteDocument(doc);
     }
   };
-  
+
+  const validateFileName = (fn) => {
+    let ext = getFileExtension(fn);
+    return (ext === 'mv') || (ext === 'v');
+  }
+
   let onAddDocClick = (fn: string) => {
-    // console.log("add");
+
+    if (!validateFileName(fn)) {
+      // ***TODO use notif like gist component
+      window.alert(`The filename must end in .mv or .v.`);
+      return false;
+    }
+
     if (!fn) {
       const extension = (manager.options.languageId === 'rocq') ? '.v' : '.mv';
       let n = manager.doc_manager.documents.length + 1;
@@ -182,7 +205,7 @@ export function initDocumentManagerComponent(manager: CoqManager) {
   // to get icon
   const getURL = (relative: string) =>
     new URL(relative, manager.options.base_path);
-  
+
   const rootElement = document.getElementById(manager.doc_manager.container_id);
   const root = ReactDOM.createRoot(rootElement);
   root.render(
