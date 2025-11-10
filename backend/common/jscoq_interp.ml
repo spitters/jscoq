@@ -160,6 +160,7 @@ let exec_init (set_opts : init_options) =
 
 (* opts  : workspace initialization options *)
 let init_workspace ~token ~dir opts =
+  (* This needs to be in sync with coq-document.ts *)
   let vo_load_path = mk_vo_path opts.lib_path in
   let cmdline = Coq.Workspace.CmdLine.
       { coqlib = "/lib"
@@ -170,7 +171,8 @@ let init_workspace ~token ~dir opts =
       ; vo_load_path
       }
   in
-  Coq.Workspace.guess ~token ~debug:opts.debug ~dir ~cmdline
+  let add_root = true in
+  Coq.Workspace.guess ~token ~debug:opts.debug ~dir ~cmdline ~add_root ()
 
 (** XXX Error better when the workspace was not initialized *)
 let get_ws () = Option.get !cur_workspace
@@ -206,12 +208,16 @@ let jscoq_execute =
 
   | Update { uri; version; raw } ->
     let io = lsp_cb in
-    let _stale_request : Int.Set.t = Fleche.Theory.change ~io ~token ~uri ~version ~raw in
+    let _stale_request = Fleche.Theory.change ~io ~token ~uri ~version ~raw in
     try_check ~token;
     ()
 
   | CloseDoc { uri } ->
     Fleche.Theory.close ~uri
+
+  | UpdateWorkspace ->
+    let _ = Fleche.Theory.workspace_update () in
+    ()
 
   | Request { id; method_ } ->
     let { Request.uri; loc = _; v = _ } = method_ in
@@ -221,7 +227,8 @@ let jscoq_execute =
     (* XXX Fix to postpone requests *)
     let () = match Fleche.Theory.Request.add r with
       | Now doc ->
-        let f _uri = Request_interp.do_request ~token ~doc in
+        let io = lsp_cb in
+        let f _uri = Request_interp.do_request ~io ~token ~doc in
         let res = Request.process ~f method_ in
         out_fn (Response { id; res })
       | Postpone -> ()

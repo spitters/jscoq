@@ -277,7 +277,7 @@ export class CoqWorker {
         /** @todo would be desirable to interrupt a previously started document re-check. */
         /**   unfortunately this interrupts the new request as well! so yeah, */
         /**   this woudl involve some backend work  */
-        //this.interrupt();
+        // this.interrupt();
         return fut;
     }
 

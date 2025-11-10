@@ -60,6 +60,7 @@
  - [mdview][gist] Add Markdown view editor with a button to switch
    between Markdown view editor and CodeMirror 6 editor.
    Some improvements for gist. (@helguo #426)
+ - [general] Add .vo file save functionality (@ejgallego, @helguo, #430)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

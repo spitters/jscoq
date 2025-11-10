@@ -44,6 +44,7 @@ module Method = struct
     | TypeOfId of string
     | Inspect of search_query
     | Completion of string
+    | SaveVo
   [@@deriving yojson]
 
 end
@@ -93,6 +94,8 @@ type jscoq_cmd =
   | Update  of { uri : Fleche_lsp.JLang.LUri.File.t; version : int; raw : string }
   | CloseDoc of { uri : Fleche_lsp.JLang.LUri.File.t }
 
+  | UpdateWorkspace
+
   | Request of { id: int; method_ : Method.t Request.t [@key "method"] }
 
   | InfoPkg of string * string list
@@ -110,7 +113,7 @@ type jscoq_answer =
   | Notification of
       { uri: Fleche_lsp.JLang.LUri.File.t
       ; version: int
-      ; diagnostic: Fleche_lsp.JLang.Diagnostic.t list
+      ; diagnostic: Pp.t Fleche_lsp.JLang.Diagnostic.t list
       }
 
   (** LSP-compatible payload for diagnostics *)

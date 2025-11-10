@@ -735,14 +735,19 @@ export class CoqManager {
                 "===> Waiting for package(s) to load.");
     }
 
-    toolbarClickHandler(evt) {
-        
+    async toolbarClickHandler(evt) {
+
         /* @ts-ignore */
         this.tab_manager.current_tab.editor.focus();
 
         switch (evt.target.name) {
+        // hack for save
         case 'to-cursor' :
-            console.log('deprecated action');
+            const editor = this.tab_manager.current_tab.editor;
+            // This is not used for save
+            const offset = editor.getCursorOffset();
+            await this.coq.sendRequest(editor.doc.uri, offset, ['SaveVo']);
+            this.coq.sendCommand(["UpdateWorkspace"]);
             break;
 
         case 'up' :
