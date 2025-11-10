@@ -343,7 +343,7 @@ export const rocqParser = StreamLanguage.define({
 
 // 2. HighlightStyle mapped to CM6 tags
 const rocqHighlightStyle = HighlightStyle.define([
-  { tag: t.keyword, color: "#98fb98", fontWeight: "bold" },
+  { tag: t.keyword, color: "#770088" /*, fontWeight: "bold" */ },
   { tag: t.comment, color: "#aa5500", fontStyle: "italic" },
   { tag: t.string, color: "#50a14f" },
   { tag: t.number, color: "#986801" },
