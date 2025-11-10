@@ -11,6 +11,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.css';
+import { rocq } from "./mode/rocq-cm6";
 
 export class CoqEditorMdView implements ICoqEditor {
     doc: CoqDocument;
@@ -81,7 +82,8 @@ export class CoqEditorMdView implements ICoqEditor {
                         this.doc.update(this.getValue());
                         onChange(this.doc);
                     }
-                })
+                }),
+              rocq()
             ];
             // code block content
             let text: string = children.toString();
