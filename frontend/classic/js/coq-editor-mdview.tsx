@@ -116,11 +116,7 @@ export class CoqEditorMdView implements ICoqEditor {
             />;
         } else
             // if other language then return regular code block
-            return (
-                <pre className={className} {...props}>
-                    <code>{children}</code>
-                </pre>
-            );
+            return ( <code className={className} {...props}>{children}</code> );
         }};
     }
 
