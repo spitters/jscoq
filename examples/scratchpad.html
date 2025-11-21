@@ -38,7 +38,6 @@
         panel_theme = ifHas('dark') ?? sp.get('theme') ?? 'light',
         editor_theme = sp.get('editor_theme') ?? (panel_theme == 'dark' ? 'blackboard' : 'default');
 
-    var jscoq_ids = ['editors'];
     var jscoq_opts = {
         backend: sp.get('backend') ?? ifHas('wa'),
         frontend: sp.get('frontend'),
@@ -49,6 +48,7 @@
         implicit_libs: true,
         init_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith'],
         all_pkgs:  ['coq'],
+        multiple_editors: true, // ***TODO remove after layout is fixed
         editor: { mode: { 'company-coq': false }, theme: editor_theme },
         theme: panel_theme
     };
@@ -56,7 +56,7 @@
     /* Global reference */
     var coq;
 
-    JsCoq.start(jscoq_ids, jscoq_opts).then(res => {
+    JsCoq.start(jscoq_opts).then(res => {
       coq = res;
       window.coq = coq;
       if (sp.has('project'))     coq.openProject(sp.get('project'));

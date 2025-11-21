@@ -68,9 +68,11 @@ function DocumentManagerComponent({
   onDocButtonClose,
   onAddDocClick,
 }: DocumentManagerComponentProps) {
-  const [docs, setDocs]: [CoqDocument[], Dispatch<SetStateAction<CoqDocument[]>>] = useState(manager.doc_manager.documents);
+  const [docs, setDocs]: [CoqDocument[], Dispatch<SetStateAction<CoqDocument[]>>] = 
+      useState([...manager.doc_manager.documents]);
   const [fn, setFn]: [string , Dispatch<SetStateAction<string>>] = useState("");
-  const [haveCollab, setHaveCollab]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(manager.isCollabOpened());
+  const [haveCollab, setHaveCollab]: [boolean, Dispatch<SetStateAction<boolean>>] = 
+      useState(manager.isCollabOpened());
   const [show, setShow]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false);
   const getURL = useContext(URLContext);
   // from https://feathericons.com
@@ -88,9 +90,9 @@ function DocumentManagerComponent({
 
   let addButton = (
     <button onClick={() => {
-        if (onAddDocClick(fn))
-          setFn("");
-        // setDocs([...doc_manager.documents]);
+      if (onAddDocClick(fn))
+        setFn("");
+      // setDocs([...doc_manager.documents]);
     }}>
       Add document
     </button>
@@ -101,8 +103,7 @@ function DocumentManagerComponent({
       placeholder="filename"
       value={fn}
       onKeyDown={handleFileInputKey}
-      onChange={(v) => setFn(v.target.value.trim())}
-      // style={{ width: "160px" }}
+      onChange={(v) => setFn(v.target.value)}
     />
   );
   let openCollabButton = (
@@ -146,16 +147,27 @@ function DocumentManagerComponent({
   )
 }
 
-function getFileExtension(filename) {
+function getFileExtension(filename: string) {
   if (!filename.includes('.') || filename.endsWith('.')) return '';
   return filename.slice(filename.lastIndexOf('.') + 1);
+}
+
+function isValidFilename(filename: string) {
+    const firstChar = filename.charAt(0);
+    /**
+     * accept only alphabetic letters, excluding non-alphabetic characters like Chinese or Japanese
+     */
+    const validFirstChar = firstChar.toUpperCase() !== firstChar.toLowerCase();
+    const noInvalidChar = [' ', '-'].every((c) => !filename.includes(c));
+    let ext = getFileExtension(filename);
+    const validExtension = (ext === 'mv') || (ext === 'v');
+    return validFirstChar && noInvalidChar && validExtension;
 }
 
 export function initDocumentManagerComponent(manager: CoqManager) {
   // open doc
   let onDocButtonClick = (doc: CoqDocument, ev: MouseEvent) => {
     if (!(ev.target instanceof HTMLButtonElement)) return;
-    // console.log("click");
     let tab_manager = manager.tab_manager;
     let tab = tab_manager.findTab(doc);
     if (!tab)
@@ -170,36 +182,24 @@ export function initDocumentManagerComponent(manager: CoqManager) {
     }
   };
 
-  const validateFileName = (fn) => {
-    let ext = getFileExtension(fn);
-    return (ext === 'mv') || (ext === 'v');
-  }
-
   let onAddDocClick = (fn: string) => {
-
-    if (!validateFileName(fn)) {
+    if (!isValidFilename(fn)) {
       // ***TODO use notif like gist component
-      window.alert(`The filename must end in .mv or .v.`);
+      window.alert(`The filename must start with an alphabetic letter, not contain spaces or '-', and must end with .mv or .v.`);
       return false;
     }
-
-    if (!fn) {
-      const extension = (manager.options.languageId === 'rocq') ? '.v' : '.mv';
-      let n = manager.doc_manager.documents.length + 1;
-      let filename = "untitled" + n + extension;
-      while (!manager.doc_manager.createDocument("", filename)) {
-        filename = "untitled" + (++n) + extension;
-      }
-      return true;
-    } else {
-      const createSuccess = manager.doc_manager.createDocument("", fn);
-      if (!createSuccess) {
-        // ***TODO use notif like gist component
-        window.alert(`This filename '${fn}' already exists.`);
-        return false;
-      } else
-        return true;
+    const createSuccess = manager.doc_manager.createDocument("", fn);
+    if (!createSuccess) {
+      // ***TODO use notif like gist component
+      window.alert(`This filename '${fn}' already exists.`);
+      return false;
     }
+    // open new tab
+    let doc = manager.doc_manager.documents.find((doc) => doc.filename === fn);
+    let tab_manager = manager.tab_manager;
+    let tab = tab_manager.createTab(doc);
+    tab_manager.setCurrent(tab);
+    return true;
   };
 
   // to get icon

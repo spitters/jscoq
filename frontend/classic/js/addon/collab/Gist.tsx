@@ -61,8 +61,8 @@ export class Gist {
     return this.docs.getFiles();
   }
 
-  removeDeletedFiles() {
-    this.docs.removeDeletedFiles();
+  requestFulfilled(result: any) {
+    this.docs.requestFulfilled(result);
   }
 
   close() {

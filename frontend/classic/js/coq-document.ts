@@ -67,8 +67,8 @@ export class CoqDocument {
 function getElemValue(eId: string): string {
     var area : HTMLTextAreaElement = document.getElementById(eId) as HTMLTextAreaElement;
     if (! (area instanceof HTMLTextAreaElement)) {
-        // ***TODO 'ide-wrapper' (default value for elems) + 'editors' for cm5 editor HTMLElement 
-        if (eId === 'ide-wrapper' || eId === 'editors') return null;
+        // ***TODO 'ide-wrapper' (default value for elems) 
+        if (eId === 'ide-wrapper') return null;
         throw new Error(`not implemented: '${eId}' must be a textarea`);
         // console.error(`not implemented: '${eId}' must be a textarea`);
         // return null;
@@ -86,7 +86,7 @@ function getElemValue(eId: string): string {
  */
 export function initDocument(manager: CoqManager,
                              eIds: string[]) : CoqDocument {
-
+    // ***TODO remove from textarea
     const extension = (manager.options.languageId === 'rocq') ? '.v' : '.mv';
     const CoqDocument = manager.getDocumentConstructor();
     // from textarea
