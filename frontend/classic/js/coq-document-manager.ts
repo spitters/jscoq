@@ -1,4 +1,4 @@
-import { CoqDocument, initDocument } from "./coq-document";
+import { CoqDocument, initDocuments } from "./coq-document";
 import { CoqManager } from "./coq-manager";
 
 export interface ICoqDocumentManager {
@@ -23,8 +23,22 @@ export class CoqDocumentManager implements ICoqDocumentManager {
         if (elems.every((e) => e instanceof CoqDocument)) {
             this.documents = elems;
         } else {
-            const doc = initDocument(manager, elems);
-            this.documents.push(doc);
+            initDocuments(manager, elems).then((docs) => {
+                this.documents = docs;
+                // ***TODO
+                this.manager.doc_manager.documents = this.documents;
+                if (this.manager.doc_manager instanceof CoqDocumentManager) {
+                    this.setDocs = this.manager.doc_manager.setDocs;
+                }
+                // update DocumentManagerComponent
+                if (this.setDocs) // ***TODO
+                    this.setDocs(() => [...docs]);
+                // open first document
+                let tab_manager = this.manager.tab_manager;
+                if (this.documents.length > 0 && !tab_manager.current_tab) {
+                    tab_manager.setCurrent(tab_manager.createTab(this.documents[0]));
+                }
+            });
         }
         if (manager.options.multiple_editors) {
             this.container_id = 'documents';

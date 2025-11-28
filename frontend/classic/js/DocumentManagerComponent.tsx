@@ -73,13 +73,14 @@ function DocumentManagerComponent({
   const [fn, setFn]: [string , Dispatch<SetStateAction<string>>] = useState("");
   const [haveCollab, setHaveCollab]: [boolean, Dispatch<SetStateAction<boolean>>] = 
       useState(manager.isCollabOpened());
-  const [show, setShow]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false);
+  const [show, setShow]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(true);
   const getURL = useContext(URLContext);
   // from https://feathericons.com
   let srcHide = getURL("frontend/classic/images/chevrons-left.svg").toString();
   let srcShow = getURL("frontend/classic/images/chevrons-right.svg").toString();
   // ***TODO
-  (manager.doc_manager as CoqDocumentManager).setDocs = setDocs;
+  if (manager.doc_manager instanceof CoqDocumentManager)
+    manager.doc_manager.setDocs = setDocs;
 
   const handleFileInputKey = (e) => {
     if (e.key === 'Enter') {

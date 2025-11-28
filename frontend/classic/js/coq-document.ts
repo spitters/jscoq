@@ -1,4 +1,5 @@
 import { CoqManager } from "./coq-manager";
+import { getAllFiles } from "./indexedDB";
 
 export type languageId = 'rocq' | 'markdown';
 
@@ -77,6 +78,16 @@ function getElemValue(eId: string): string {
     return area.value;
 }
 
+async function initDocumentsFromDB(manager: CoqManager) {
+    const CoqDocument = manager.getDocumentConstructor();
+    let documents: CoqDocument[] = [];
+    let files = await getAllFiles();
+    for (const [filename, content] of Object.entries(files)) {
+        documents.push(new CoqDocument(content, filename))
+    }
+    return documents;
+}
+
 /**
  * create the first document, with textarea value if exist
  * @param eIds textarea element ids
@@ -84,22 +95,21 @@ function getElemValue(eId: string): string {
  * @param content_type 
  * @returns 
  */
-export function initDocument(manager: CoqManager,
-                             eIds: string[]) : CoqDocument {
+export async function initDocuments(manager: CoqManager,
+                             eIds: string[]) {
     // ***TODO remove from textarea
     const extension = (manager.options.languageId === 'rocq') ? '.v' : '.mv';
     const CoqDocument = manager.getDocumentConstructor();
+    let documents: CoqDocument[] = [];
     // from textarea
     let values: string[] = (eIds) ? eIds.map((e) => getElemValue(e)) : [];
     values = values.filter((v) => v !== null);
-    let filename: string,
-        content : string;
-    if (values.length) {
-        content = values.join('\n');
-        filename = "fromTextarea" + extension;
-    } else { // if no textarea
-        content = "";
-        filename = "untitled1" + extension;
-    }
-    return new CoqDocument(content, filename);
+    if (values.length)
+        documents.push(new CoqDocument(values.join('\n'), "fromTextarea" + extension));
+    else // from cache
+        documents = await initDocumentsFromDB(manager);
+    // if nothing then create empty document
+    if (documents.length === 0)
+        documents.push(new CoqDocument("", "untitled" + extension))
+    return documents;
 }

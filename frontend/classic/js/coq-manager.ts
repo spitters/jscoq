@@ -39,6 +39,7 @@ import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { CoqTabManager } from './coq-tab-manager';
 import { initDocumentManagerComponent } from './DocumentManagerComponent';
 import { Gist } from './addon/collab/Gist';
+import { replaceAllFiles } from './indexedDB';
 
 type frontend = "pm" | "cm6" | "mdview";
 
@@ -224,6 +225,7 @@ export class CoqManager {
         }, 200);
 
         this.tab_manager = new CoqTabManager(this, onChange, onCursorUpdated);
+        // create first tab
         if (this.doc_manager.documents.length > 0) {
             let doc = this.doc_manager.documents[0];
             this.tab_manager.setCurrent(this.tab_manager.createTab(doc));
@@ -787,6 +789,13 @@ export class CoqManager {
         if (!this.collab) await this.openCollab();
         this.collab.p2p.save();
     } */
+
+    async saveDocumentsInCache() {
+        let documents = {};
+        for (const doc of this.doc_manager.documents)
+            documents[doc.filename] = doc.value;
+        await replaceAllFiles(documents);
+    }
 
     // Aux function for goals2DOM
     flatLength(l) {

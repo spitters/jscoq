@@ -64,8 +64,9 @@
       if (sp.has('gist'))        coq.openCollab({gist: sp.get('gist')});
       // if (sp.has('code'))
     });
-    window.addEventListener('beforeunload', (event) => {
-      event.preventDefault();
+    window.addEventListener("beforeunload", async (ev) => {
+      ev.preventDefault();
+      await coq.saveDocumentsInCache();
     });
   </script>
 </body>
