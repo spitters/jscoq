@@ -386,18 +386,21 @@ body.jscoq-main .CodeMirror-linenumber {
 
 #hide-panel {
   cursor: pointer;
-  width: 32px;
   position: absolute;
-  left: -34px;
-  top: 2px
+  left: -28px;
+  top: calc(50% - 14px - 34px);
+  background: rgb(200 200 200 / 80%);
+  border: gray solid 1px;
+  width: 26px;
+  height: 26px;
+  background-size: 100%;
+  transition: opacity 1s ease;
+  border-radius: 40% 0% 0% 40%;
+  background-image: url(../images/chevrons-right.svg);
 }
 
-#hide-panel g path {
-  fill: #00a806;
-}
-
-#ide-wrapper:not(.goals-active) #hide-panel g path {
-  fill: #f20000
+#ide-wrapper:not(.goals-active) #hide-panel {
+  background-image: url(../images/chevrons-left.svg);
 }
 
 /* Toolbar */
