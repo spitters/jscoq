@@ -54,7 +54,7 @@ export class CoqLayoutClassic {
     html(params: {backend: backend, kb: {[op: string]: string}}) {
         var {backend, kb} = params;
         return `
-    <button id="hide-panel" alt="Toggle panel (F8)" title="Toggle panel (F8)"></button>
+    <button id="hide-panel" alt="Toggle panel (${kb.toggle})" title="Toggle panel (${kb.toggle})"></button>
     <div id="toolbar">
       <div class="exits">
         <a href="https://coq.now.sh">
@@ -63,12 +63,10 @@ export class CoqLayoutClassic {
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
-        <button name="up"          alt="Up (${kb.up})"              title="Up (${kb.up})"></button><!--
-     --><button name="down"        alt="Down (${kb.down})"          title="Down (${kb.down})"></button>
-        <button name="to-cursor"   alt="To cursor (${kb.cursor})"   title="To cursor (${kb.cursor})"></button>
+        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
+        <button name="saveVo"     alt="Save .vo (${kb.saveVo})"    title="Save .vo (${kb.saveVo})"></button>
         <button name="interrupt"   alt="Interrupt Worker (Esc)"     title="Interrupt Worker (Esc)"></button>
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
-        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
       </span>
       <div class="exits right">
         <svg class="app-menu-button" viewBox="0 0 80 80">
@@ -121,7 +119,7 @@ export class CoqLayoutClassic {
      *   - base_path: URL for the root directory of jsCoq
      *   - theme: jsCoq theme to use for the panel ('light' or 'dark')
      * @param {object} params HTML template parameters; used keys are:
-     *   - kb: key-binding tooltips for actions {up, down, cursor}
+     *   - kb: key-binding tooltips for actions {saveVo, toggle, help}
      */
     constructor(options, params) {
 

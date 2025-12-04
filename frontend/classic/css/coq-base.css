@@ -499,18 +499,8 @@ body.jscoq-main .CodeMirror-linenumber {
   transition: none;
 }
 
-#buttons button[name=up] {
-  background-image: url(../images/up.png);
-  width: 20px;
-  height: 20px;
-}
-#buttons button[name=down] {
-  background-image: url(../images/down.png);
-  width: 20px;
-  height: 20px;
-}
-#buttons button[name=to-cursor] {
-  background-image: url(../images/to-cursor.png);
+#buttons button[name=saveVo] {
+  background-image: url(../images/save.svg);
 }
 #buttons button[name=interrupt] {
   background-image: url(../images/stop.png);

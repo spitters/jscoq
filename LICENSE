@@ -18,7 +18,7 @@ License: CC-BY 3.0
 Comment:
   - Check button made by Google from www.flaticon.com, licensed under CC BY 3.0
 
-Files: frontend/classic/images/{chevrons-left,chevrons-right,edit,file-text,trash-2}.svg
+Files: frontend/classic/images/{chevrons-left,chevrons-right,edit,file-text,save,trash-2}.svg
 License: MIT
 Comment: From https://feathericons.com/
 
