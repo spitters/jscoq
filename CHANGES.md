@@ -61,6 +61,8 @@
    between Markdown view editor and CodeMirror 6 editor.
    Some improvements for gist. (@helguo #426)
  - [general] Add .vo file save functionality (@ejgallego, @helguo, #430)
+ - [general] Cache documents on tab switch, tab close,
+   and document delete, using IndexedDB (@helguo, #436)
 
 # jsCoq 0.17.1 "Night slip"
 ---------------------------

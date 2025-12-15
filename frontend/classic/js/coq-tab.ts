@@ -2,6 +2,7 @@ import { CoqDocument } from "./coq-document";
 import { createEditorContainer, ICoqEditor, ICoqEditorConstructor } from "./coq-editor";
 import { CoqEditorMdView } from "./coq-editor-mdview";
 import { CoqManager } from "./coq-manager";
+import { addFile } from "./indexedDB";
 
 export class CoqTab {
     tab: HTMLButtonElement;
@@ -33,18 +34,19 @@ export class CoqTab {
         tab.innerText = doc.filename;
         let tab_manager = manager.tab_manager;
         tab.addEventListener('click', (ev: MouseEvent) => {
-            if (ev.target !== tab)
-                return;
             if (this !== tab_manager.current_tab) {
-                tab_manager.setCurrent(this);
+                tab_manager.setCurrent(this, true);
             }
         });
         // to close tab
-        let onClickClose = (ev: MouseEvent) => {
+        let onClickClose = async (ev: MouseEvent) => {
+            ev.stopPropagation();
             tab_manager.closeTab(this);
             if (this === tab_manager.current_tab) {
                 tab_manager.setCurrent((tab_manager.tabs.length > 0) ? tab_manager.tabs[0] : null);
             }
+            // cache
+            await addFile(this.editor.doc.value, this.editor.doc.filename);
         };
         let s = this.createCloseButton(onClickClose);
         tab.appendChild(s);

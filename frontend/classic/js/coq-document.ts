@@ -82,8 +82,10 @@ async function initDocumentsFromDB(manager: CoqManager) {
     const CoqDocument = manager.getDocumentConstructor();
     let documents: CoqDocument[] = [];
     let files = await getAllFiles();
-    for (const [filename, content] of Object.entries(files)) {
-        documents.push(new CoqDocument(content, filename))
+    if (files) {
+        for (const [filename, content] of Object.entries(files)) {
+            documents.push(new CoqDocument(content, filename))
+        }
     }
     return documents;
 }

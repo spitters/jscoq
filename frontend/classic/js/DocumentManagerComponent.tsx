@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 import { CoqManager } from "./coq-manager";
 import { CoqDocumentManager } from "./coq-document-manager";
 import { CoqDocument } from "./coq-document";
+import { deleteFile } from "./indexedDB";
 
 const URLContext = createContext<(relative: string) => URL>(null);
 
@@ -173,12 +174,14 @@ export function initDocumentManagerComponent(manager: CoqManager) {
     let tab = tab_manager.findTab(doc);
     if (!tab)
       tab = tab_manager.createTab(doc);
-    tab_manager.setCurrent(tab);
+    tab_manager.setCurrent(tab, true);
   };
 
   // delete doc
-  let onDocButtonClose = (doc: CoqDocument) => {
+  let onDocButtonClose = async (doc: CoqDocument) => {
     if (window.confirm(`Are you sure you want to delete '${doc.filename}' ?`)) {
+      // cache
+      await deleteFile(doc.filename);
       manager.doc_manager.deleteDocument(doc);
     }
   };
@@ -199,7 +202,7 @@ export function initDocumentManagerComponent(manager: CoqManager) {
     let doc = manager.doc_manager.documents.find((doc) => doc.filename === fn);
     let tab_manager = manager.tab_manager;
     let tab = tab_manager.createTab(doc);
-    tab_manager.setCurrent(tab);
+    tab_manager.setCurrent(tab, true);
     return true;
   };
 

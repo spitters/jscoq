@@ -39,7 +39,7 @@ import { CoqGistDocument } from './addon/collab/coq-gist-document';
 import { CoqTabManager } from './coq-tab-manager';
 import { initDocumentManagerComponent } from './DocumentManagerComponent';
 import { Gist } from './addon/collab/Gist';
-import { replaceAllFiles } from './indexedDB';
+import { addFile } from './indexedDB';
 
 type frontend = "pm" | "cm6" | "mdview";
 
@@ -790,11 +790,11 @@ export class CoqManager {
         this.collab.p2p.save();
     } */
 
-    async saveDocumentsInCache() {
-        let documents = {};
-        for (const doc of this.doc_manager.documents)
-            documents[doc.filename] = doc.value;
-        await replaceAllFiles(documents);
+    async saveCurrentDocumentInCache() {
+        if (this.tab_manager.current_tab) {
+            let doc = this.tab_manager.current_tab.editor.doc;
+            await addFile(doc.value, doc.filename);
+        }
     }
 
     // Aux function for goals2DOM

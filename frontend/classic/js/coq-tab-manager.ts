@@ -1,6 +1,7 @@
 import { CoqDocument } from "./coq-document";
 import { CoqManager } from "./coq-manager";
 import { CoqTab } from "./coq-tab";
+import { addFile } from "./indexedDB";
 
 export class CoqTabManager {
     
@@ -48,13 +49,18 @@ export class CoqTabManager {
         }
     }
 
-    setCurrent(tab: CoqTab) {
+    setCurrent(tab: CoqTab, cache : boolean = false) {
         if (tab === this.current_tab)
             return;
         // process old current
         if (this.current_tab) {
             this.current_tab.hide();
             this.current_tab.removeSelectedStyle();
+            if (cache) {
+                let doc = this.current_tab.editor.doc;
+                // await
+                addFile(doc.value, doc.filename);
+            }
         }
         // process new current
         this.current_tab = tab;
