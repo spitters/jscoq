@@ -54,18 +54,7 @@ export class CoqLayoutClassic {
     html(params: {backend: backend, kb: {[op: string]: string}}) {
         var {backend, kb} = params;
         return `
-    <svg id="hide-panel" viewBox="0 0 32 32" title="Toggle panel (F8)">
-      <path d="M16.001,0C7.165,0,0,7.164,0,16.001S7.162,32,16.001,32C24.838,32,32,24.835,32,15.999S24.838,0,16.001,0L16.001,0z"/>
-      <g>
-        <path fill="#FFFFFF" d="M14.5,4.212c0-0.895,0.607-1.617,1.501-1.617c0.893,0,1.5,0.722,1.5,1.617v11.124
-                            c0,0.892-0.607,1.614-1.499,1.614c-0.894,0-1.501-0.722-1.501-1.614z"/>
-        <path fill="#FFFFFF" d="M16,27.317c-6.244,0-11.321-5.08-11.321-11.321c0-4.049,2.188-7.817,5.711-9.831
-                            c0.772-0.441,1.761-0.173,2.203,0.6c0.444,0.775,0.174,1.761-0.6,2.206c-2.519,1.441-4.083,4.133-4.083,7.025
-                            c0,4.462,3.629,8.09,8.09,8.09c4.459,0,8.091-3.628,8.091-8.09c0-2.892-1.567-5.584-4.086-7.025
-                            c-0.773-0.444-1.043-1.431-0.599-2.206c0.444-0.773,1.43-1.044,2.203-0.6c3.523,2.014,5.711,5.782,5.711,9.831
-                            C27.32,22.237,22.243,27.317,16.001,27.317z"/>
-      </g>
-    </svg>
+    <button id="hide-panel" alt="Toggle panel (${kb.toggle})" title="Toggle panel (${kb.toggle})"></button>
     <div id="toolbar">
       <div class="exits">
         <a href="https://coq.now.sh">
@@ -74,12 +63,10 @@ export class CoqLayoutClassic {
         </a>
       </div> <!-- /.exits -->
       <span id="buttons">
-        <button name="up"          alt="Up (${kb.up})"              title="Up (${kb.up})"></button><!--
-     --><button name="down"        alt="Down (${kb.down})"          title="Down (${kb.down})"></button>
-        <button name="to-cursor"   alt="To cursor (${kb.cursor})"   title="To cursor (${kb.cursor})"></button>
+        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
+        <button name="saveVo"     alt="Save .vo (${kb.saveVo})"    title="Save .vo (${kb.saveVo})"></button>
         <button name="interrupt"   alt="Interrupt Worker (Esc)"     title="Interrupt Worker (Esc)"></button>
         <button name="reset"       alt="Reset worker"               title="Reset worker"></button>
-        <button name="editor"      alt="Switch editor"              title="Switch editor"></button>
       </span>
       <div class="exits right">
         <svg class="app-menu-button" viewBox="0 0 80 80">
@@ -132,7 +119,7 @@ export class CoqLayoutClassic {
      *   - base_path: URL for the root directory of jsCoq
      *   - theme: jsCoq theme to use for the panel ('light' or 'dark')
      * @param {object} params HTML template parameters; used keys are:
-     *   - kb: key-binding tooltips for actions {up, down, cursor}
+     *   - kb: key-binding tooltips for actions {saveVo, toggle, help}
      */
     constructor(options, params) {
 
@@ -173,10 +160,7 @@ export class CoqLayoutClassic {
         this.buttons.addEventListener('click', async evt => await this.onAction(evt));
 
         // set "switch editor" button's img
-        const path = 'frontend/classic/images/';
-        const img = (options.frontend !== 'mdview' ? 'file-text.svg' : 'edit.svg');
-        const button = document.querySelector("#buttons button[name=editor]");
-        button.setAttribute("style", `background-image: url(${this._url(path + img)});`);
+        this.updateSwitchEditorIcon(options.frontend === 'mdview');
 
         this.menubtn.addEventListener('mousedown', () =>
             this.settings.toggle());
@@ -341,6 +325,14 @@ export class CoqLayoutClassic {
         // Disable the button actions and dim them.
         this._setButtons(false);
         this.ide.classList.add('on-hold');
+    }
+
+    updateSwitchEditorIcon(isMdview: boolean) {
+        // if using mdview then show edit img else show mdview img
+        const imgPath = 'frontend/classic/images/' + (isMdview ? 'edit.svg' : 'file-text.svg');
+        const imgUrl = new URL(imgPath, this.options.base_path);
+        const button = document.querySelector("#buttons button[name=editor]");
+        button.setAttribute("style", `background-image: url(${imgUrl});`);
     }
 
     // This is still not optimal.

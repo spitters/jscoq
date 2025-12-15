@@ -73,7 +73,7 @@ function DocumentManagerComponent({
   const [fn, setFn]: [string , Dispatch<SetStateAction<string>>] = useState("");
   const [haveCollab, setHaveCollab]: [boolean, Dispatch<SetStateAction<boolean>>] = 
       useState(manager.isCollabOpened());
-  const [show, setShow]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false);
+  const [show, setShow]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(true);
   const getURL = useContext(URLContext);
   // from https://feathericons.com
   let srcHide = getURL("frontend/classic/images/chevrons-left.svg").toString();
@@ -185,7 +185,8 @@ export function initDocumentManagerComponent(manager: CoqManager) {
   let onAddDocClick = (fn: string) => {
     if (!isValidFilename(fn)) {
       // ***TODO use notif like gist component
-      window.alert(`The filename must start with an alphabetic letter, not contain spaces or '-', and must end with .mv or .v.`);
+      window.alert(`The filename must start with an alphabetic letter, ` +
+                   `not contain spaces or '-', and must end with .mv or .v.`);
       return false;
     }
     const createSuccess = manager.doc_manager.createDocument("", fn);

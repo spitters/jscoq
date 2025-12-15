@@ -654,9 +654,19 @@ export class CoqManager {
             this.layout.update_goals(resp[1]);
     }
 
+    async saveVo() {
+        const editor = this.tab_manager.current_tab.editor;
+        // This is not used for save
+        const offset = editor.getCursorOffset();
+        await this.coq.sendRequest(editor.doc.uri, offset, ['SaveVo']);
+        this.coq.sendCommand(["UpdateWorkspace"]);
+    }
+
     keyTooltips() {
-        return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎', help: 'F1'} :
-            {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter', help: 'F1'}
+        // return isMac ? {up: '⌥↑', down: '⌥↓', cursor: '⌥⏎', help: 'F1'} :
+        //     {up: 'Alt-↑/P', down: 'Alt-↓/N', cursor: 'Alt-Enter', help: 'F1'}
+        return isMac ? {saveVo: '⌥S', toggle: 'F8', help: 'F1'} :
+               {saveVo: 'Alt+S', toggle: 'F8', help: 'F1'}
     }
 
     /**
@@ -674,10 +684,12 @@ export class CoqManager {
               help   = () => this.layout.toggleHelp(),
               interrupt = () => this.interruptRequest();
 
-        const toCursor  = () => this.setGoalCursor();
+        // const toCursor  = () => this.setGoalCursor();
+        const saveVo = () => this.saveVo();
         const nav_bindings = {
-            '_Enter':     toCursor, '_NumpadEnter': toCursor,
-            '^Enter':     toCursor, '^NumpadEnter': toCursor,
+            // '_Enter':     toCursor, '_NumpadEnter': toCursor,
+            // '^Enter':     toCursor, '^NumpadEnter': toCursor,
+            '_KeyS': saveVo,
             'F8': toggle,
             'F1': help,
             'Escape': interrupt
@@ -742,20 +754,8 @@ export class CoqManager {
 
         switch (evt.target.name) {
         // hack for save
-        case 'to-cursor' :
-            const editor = this.tab_manager.current_tab.editor;
-            // This is not used for save
-            const offset = editor.getCursorOffset();
-            await this.coq.sendRequest(editor.doc.uri, offset, ['SaveVo']);
-            this.coq.sendCommand(["UpdateWorkspace"]);
-            break;
-
-        case 'up' :
-            console.log('deprecated action');
-            break;
-
-        case 'down' :
-            console.log('deprecated action');
+        case 'save-vo' :
+            this.saveVo();
             break;
 
         case 'interrupt':
@@ -768,13 +768,15 @@ export class CoqManager {
 
         case 'editor':
             this.tab_manager.switchView();
-            // if using mdview then show edit img else show mdview img
-            const isMdview = this.tab_manager.current_tab.editor instanceof CoqEditorMdView;
-            const imgPath = 'frontend/classic/images/' + (isMdview ? 'edit.svg' : 'file-text.svg');
-            const imgUrl = new URL(imgPath, this.options.base_path);
-            evt.target.style.backgroundImage = `url(${imgUrl})`;
+            this.updateSwitchEditorIcon();
             break;
         }
+    }
+
+    updateSwitchEditorIcon() {
+        // if using mdview then show edit img else show mdview img
+        const isMdview = this.tab_manager.current_tab.editor instanceof CoqEditorMdView;
+        this.layout?.updateSwitchEditorIcon(isMdview);
     }
 
     /* editorActionHandler(action) {

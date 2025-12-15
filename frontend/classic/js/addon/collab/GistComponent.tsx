@@ -1,5 +1,5 @@
 import { Octokit } from "@octokit/core";
-import { useEffect, useState, Dispatch, SetStateAction, ChangeEvent } from "react";
+import { useEffect, useState, useRef, Dispatch, SetStateAction, ChangeEvent } from "react";
 import { Gist } from "./Gist"
 
 /**
@@ -173,6 +173,16 @@ function buttonsElem(
   };
 }
 
+function confirmReplaceFiles(filenames: string[]) {
+  const maxFilename = 3;
+  const filenamesToShow = filenames.slice(0, maxFilename).join('\n');
+  const diff = maxFilename - filenames.length;
+  const otherFilename = diff < 0 ? `\n...and ${filenames.length - maxFilename} more file(s)` : "";
+  let msg = `Do you want to load the following files?\n${filenamesToShow + otherFilename}` +
+            `\n\nWarning: This will replace all existing files and cannot be undone.`;
+  return confirm(msg);
+}
+
 type GistComponentProps = {
   gist: Gist;
   startGistID?: string;
@@ -188,7 +198,18 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
   const [gistURL, setGistURL]: [string, Dispatch<SetStateAction<string>>] = useState(gistHomeURL);
   const [notif, setNotif]: [string, Dispatch<SetStateAction<string>>] = useState("");
 
+  const devMode = process.env.NODE_ENV === "development";
+  let hasMount: React.MutableRefObject<boolean>;
+  if (devMode)
+    hasMount = useRef(false);
+
   useEffect(() => {
+    // to prevent the effect from running twice on its first execution
+    // in development mode due to React Strict Mode
+    if (devMode && !hasMount.current) {
+      hasMount.current = true;
+      return;
+    }
     if (gistID) {
       octokitRead
         .request("GET /gists/" + gistID, {
@@ -196,8 +217,15 @@ export default function GistComponent({ gist, startGistID }: GistComponentProps)
           headers: { "X-GitHub-Api-Version": "2022-11-28" },
         })
         .then((result) => {
+          // clear notif
+          setNotif("");
           let rawFiles = result.data.files;
-          let files = Object.keys(rawFiles).map((f, i) => {
+          let filenames = Object.keys(rawFiles);
+          if (!confirmReplaceFiles(filenames)) {
+            setNotif("Loading Gist files cancelled.");
+            return;
+          }
+          let files = filenames.map((f, i) => {
               return { idx: i, filename: f, content: rawFiles[f].content };
           });
           if (files.length === 0)
