@@ -62,6 +62,8 @@ export class CoqTabManager {
             tab.show();
             tab.addSelectedStyle();
         }
+        // update switch editor icon
+        this.manager.updateSwitchEditorIcon();
     }
 
     findTab(doc: CoqDocument) {

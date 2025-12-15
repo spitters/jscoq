@@ -160,10 +160,7 @@ export class CoqLayoutClassic {
         this.buttons.addEventListener('click', async evt => await this.onAction(evt));
 
         // set "switch editor" button's img
-        const path = 'frontend/classic/images/';
-        const img = (options.frontend !== 'mdview' ? 'file-text.svg' : 'edit.svg');
-        const button = document.querySelector("#buttons button[name=editor]");
-        button.setAttribute("style", `background-image: url(${this._url(path + img)});`);
+        this.updateSwitchEditorIcon(options.frontend === 'mdview');
 
         this.menubtn.addEventListener('mousedown', () =>
             this.settings.toggle());
@@ -328,6 +325,14 @@ export class CoqLayoutClassic {
         // Disable the button actions and dim them.
         this._setButtons(false);
         this.ide.classList.add('on-hold');
+    }
+
+    updateSwitchEditorIcon(isMdview: boolean) {
+        // if using mdview then show edit img else show mdview img
+        const imgPath = 'frontend/classic/images/' + (isMdview ? 'edit.svg' : 'file-text.svg');
+        const imgUrl = new URL(imgPath, this.options.base_path);
+        const button = document.querySelector("#buttons button[name=editor]");
+        button.setAttribute("style", `background-image: url(${imgUrl});`);
     }
 
     // This is still not optimal.

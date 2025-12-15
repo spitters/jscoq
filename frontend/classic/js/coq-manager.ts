@@ -768,13 +768,15 @@ export class CoqManager {
 
         case 'editor':
             this.tab_manager.switchView();
-            // if using mdview then show edit img else show mdview img
-            const isMdview = this.tab_manager.current_tab.editor instanceof CoqEditorMdView;
-            const imgPath = 'frontend/classic/images/' + (isMdview ? 'edit.svg' : 'file-text.svg');
-            const imgUrl = new URL(imgPath, this.options.base_path);
-            evt.target.style.backgroundImage = `url(${imgUrl})`;
+            this.updateSwitchEditorIcon();
             break;
         }
+    }
+
+    updateSwitchEditorIcon() {
+        // if using mdview then show edit img else show mdview img
+        const isMdview = this.tab_manager.current_tab.editor instanceof CoqEditorMdView;
+        this.layout?.updateSwitchEditorIcon(isMdview);
     }
 
     /* editorActionHandler(action) {
