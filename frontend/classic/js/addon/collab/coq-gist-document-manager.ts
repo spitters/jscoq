@@ -1,6 +1,7 @@
 import { CoqDocument } from "../../coq-document";
 import { CoqDocumentManager } from "../../coq-document-manager";
 import { CoqManager } from "../../coq-manager";
+import { replaceAllFiles } from "../../indexedDB";
 import { File } from "./GistComponent";
 
 export class CoqGistDocumentManager extends CoqDocumentManager {
@@ -52,6 +53,12 @@ export class CoqGistDocumentManager extends CoqDocumentManager {
                 window.alert(`Failed to create file '${f.filename}'.`);
             }
         }
+        // cache
+        let documents = {};
+        for (const doc of this.documents)
+            documents[doc.filename] = doc.value;
+        // await
+        replaceAllFiles(documents);
     }
 
     getFiles() {
