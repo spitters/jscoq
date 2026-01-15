@@ -18,7 +18,7 @@
      node
      %{dep:dist-pkg}/mk-pkg.cjs
      %{dep:etc/pkg-metadata/coq-pkgs.json}
-     --rootdir %{env:COQBUILDDIR_REL=????}
+     --rootdir %{env:COQDIR=????}/lib
      --nostdlib))))
    ; building symbols using Make because Dune has no pattern rules T.T
    ; (run make libs-symb))))

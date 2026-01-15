@@ -3,14 +3,15 @@
     "bundle": "coq",
     "projects": {
         "init": {
-            "theories": {
+            "coq/theories": {
                 "prefix": "Corelib",
                 "dirpaths": ["Init", "ssr", "ssrmatching"]
             },
-            "plugins": {
-                "prefix": "Corelib",
-                "dirpaths": ["ltac", "syntax", "btauto", "cc", "firstorder",
-                             "ssr", "ssrmatching"]
+            "rocq-runtime/plugins": {
+                "prefix": "plugins",
+                "dirpaths": ["ltac", "number_string_notation", "tauto",
+                             "btauto", "cc", "cc_core", "firstorder", "firstorder_core",
+                             "ssreflect", "ssrmatching"]
             }
         }
     }
