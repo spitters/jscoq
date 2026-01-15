@@ -82,7 +82,7 @@ index 1c742d2..b65dc2b 100644
    let pos' = LargeFile.pos_out ch in
    let len = Int64.sub pos' pos in
 diff --git a/lib/system.ml b/lib/system.ml
-index c6a370e..f4119b0 100644
+index c6a370e..63ae23d 100644
 --- a/lib/system.ml
 +++ b/lib/system.ml
 @@ -252,7 +252,7 @@ let check_caml_version ~caml:s ~file:f =
@@ -107,6 +107,32 @@ index 94edbd9..48c4e31 100644
  (*s Exceptions. *)
  
  exception Found
+diff --git a/plugins/ltac/tacentries.ml b/plugins/ltac/tacentries.ml
+index 5f663a2..71564fd 100644
+--- a/plugins/ltac/tacentries.ml
++++ b/plugins/ltac/tacentries.ml
+@@ -239,7 +239,7 @@ let make_fresh_key =
+     (* We embed the hash of the kernel name in the label so that the identifier
+        should be mostly unique. This ensures that including two modules
+        together won't confuse the corresponding labels. *)
+-    let hash = (cur lxor (ModPath.hash (Lib.current_mp ()))) land 0x7FFFFFFF in
++    let hash = (cur lxor (ModPath.hash (Lib.current_mp ()))) land 0x3FFFFFFF in   (* coerce-32bit.patch *)
+     let lbl = Id.of_string_soft (Printf.sprintf "%s_%08X" prods hash) in
+     Lib.make_kn lbl
+ 
+diff --git a/plugins/ltac2/tac2entries.ml b/plugins/ltac2/tac2entries.ml
+index 96e6ddc..5390c2f 100644
+--- a/plugins/ltac2/tac2entries.ml
++++ b/plugins/ltac2/tac2entries.ml
+@@ -813,7 +813,7 @@ let make_fresh_key tokens =
+   (* We embed the hash of the kernel name in the label so that the identifier
+       should be mostly unique. This ensures that including two modules
+       together won't confuse the corresponding labels. *)
+-  let hash = (ModPath.hash (Lib.current_mp ())) land 0x7FFFFFFF in
++  let hash = (ModPath.hash (Lib.current_mp ())) land 0x3FFFFFFF in   (* coerce-32bit.patch *)
+   let lbl = Id.of_string_soft (Printf.sprintf "%s_%08X" prods hash) in
+   Lib.make_kn lbl
+ 
 diff --git a/plugins/micromega/coq_micromega.ml b/plugins/micromega/coq_micromega.ml
 index 5558a7e..a933478 100644
 --- a/plugins/micromega/coq_micromega.ml
