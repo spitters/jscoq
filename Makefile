@@ -231,8 +231,7 @@ COQ_BRANCH_LATEST = v9.0.0
 COQ_REPOS = https://github.com/coq/coq.git
 
 # COQ_PATCHES = trampoline fold timeout $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
-COQ_PATCHES = interrupt trampoline unix_stat # timeout fold $(COQ_PATCHES|$(WORD_SIZE)) $(COQ_PATCHES|$(ARCH))
-
+COQ_PATCHES = interrupt trampoline unix-stat $(COQ_PATCHES|$(WORD_SIZE)) # timeout fold
 COQ_PATCHES|64 = coerce-32bit
 
 $(COQSRC):
