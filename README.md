@@ -132,7 +132,7 @@ G. Gonthier. We provide some more examples as a showcase of the tool:
   Julius Orion Smith III's "The Mathematics of the Discrete Fourier
   Transform"
 
-- equations: https://x80.org/rhino-coq/v8.11/examples/equations_intro.htmla
+- equations: https://x80.org/rhino-coq/v8.11/examples/equations_intro.html
 
   Introduction to the [Coq Equations](https://github.com/mattam82/Coq-Equations) package from
   the official documentation.
