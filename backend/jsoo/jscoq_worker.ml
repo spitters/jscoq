@@ -124,10 +124,26 @@ let load_module = fun cma ->
   Format.eprintf "load_cma: %s@\n%!" cma;
   Jslibmng.coq_cma_link ~file_path:cma
 
+(* Rocq 9 asks for plugins by findlib package name (e.g.
+   "rocq-runtime.plugins.ltac") rather than by .cma path as Coq 8.x did, so the
+   old load_module path is never reached and this was left as a no-op. With it a
+   no-op, nothing loads Ltac, and even Corelib.Init.Prelude fails with
+   Not_found — which surfaces as "Doc.create, internal error: Anomaly Not_found".
+
+   Real findlib resolution would need META files in the packages. But the
+   packages already carry every plugin as <dir>/<dir>_plugin.cma alongside its
+   js_of_ocaml translation, and Jslibmng.cma_cache indexes them by bare
+   filename, so the last component of the findlib name is enough to find it.
+   Verified against all 22 plugins in the init/stdlib/ltac2 packages. *)
 let load_plugin pg =
-  match Mltop.PluginSpec.to_package pg with
-  (* XXX *)
-  | _pkg -> ()             (* Findlib; not implemented *)
+  let pkg = Mltop.PluginSpec.to_package pg in
+  let base =
+    match String.rindex_opt pkg '.' with
+    | Some i -> String.sub pkg (i + 1) (String.length pkg - i - 1)
+    | None -> pkg
+  in
+  Format.eprintf "load_plugin: %s -> %s_plugin.cma@\n%!" pkg base;
+  Jslibmng.coq_cma_link ~file_path:(base ^ "_plugin")
 
 (* This is already taken care by the LSP layer *)
 let jscoq_protect f =
