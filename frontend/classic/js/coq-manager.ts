@@ -650,6 +650,66 @@ export class CoqManager {
      * Shows the goal at a given location.
      * @param {number?} offset document offset (defaults to current cursor position).
      */
+    /**
+     * Offsets just past each sentence-terminating period, skipping (nested)
+     * comments and string literals. `.` must be followed by whitespace or EOF,
+     * which excludes qualified names (Nat.add), module paths, numerals (1.5)
+     * and the `..` notation token.
+     */
+    sentenceEnds(text: string): number[] {
+        let ends = [], depth = 0, instr = false;
+        for (let i = 0; i < text.length; i++) {
+            let c = text[i], c2 = text.substr(i, 2);
+            if (instr)     { if (c == '"') instr = false;        continue; }
+            if (c2 == '(*') { depth++; i++;                      continue; }
+            if (depth > 0) { if (c2 == '*)') { depth--; i++; }   continue; }
+            if (c == '"')  { instr = true;                       continue; }
+            if (c == '.' && text[i-1] != '.' && text[i+1] != '.' &&
+                (i + 1 >= text.length || /\s/.test(text[i+1])))
+                ends.push(i + 1);
+        }
+        return ends;
+    }
+
+    /** Move the cursor to the next (dir=+1) or previous (dir=-1) sentence end
+     *  and display the goals there. */
+    goSentence(dir: number) {
+        let text = this.editor.getValue(),
+            here = this.editor.getCursorOffset(),
+            ends = this.sentenceEnds(text);
+        let target = dir > 0 ? ends.find(o => o > here)
+                             : [...ends].reverse().find(o => o < here - 1);
+        if (target === undefined && dir < 0) target = 0;
+        if (target !== undefined) {
+            /* @ts-ignore */
+            this.editor.setCursorOffset(target);
+            this.editor.focus();
+            this.stepGoals(target);
+        }
+    }
+
+    /**
+     * Goal display for stepping. A position just past the sentence's `.`
+     * yields the post-state goals (Prev node) but no messages (Exact node
+     * misses); a position on the `.` yields the sentence's messages but the
+     * PRE-state goals. Classic jsCoq stepping showed both, so merge: goals
+     * from the post position, messages from the sentence itself.
+     */
+    async stepGoals(target: number) {
+        this.layout.waiting_for_goals(target);
+        let [post, at] = await Promise.all([
+            this.coq.sendRequest(this.uri, target, ['Goals']),
+            target > 0 ? this.coq.sendRequest(this.uri, target - 1, ['Goals'])
+                       : Promise.resolve(null)]);
+        let answer = post?.[1];
+        if (answer) {
+            let msgs = at?.[1]?.messages;
+            if (msgs?.length && !(answer.messages?.length))
+                answer = { ...answer, messages: msgs };
+            this.layout.update_goals(answer);
+        }
+    }
+
     async setGoalCursor(offset = undefined) {
         offset ??= this.editor.getCursorOffset();
         this.layout.waiting_for_goals(offset);
@@ -679,9 +739,16 @@ export class CoqManager {
               interrupt = () => this.interruptRequest();
 
         const toCursor  = () => this.setGoalCursor();
+        const next      = () => this.goSentence(+1);
+        const prev      = () => this.goSentence(-1);
         const nav_bindings = {
             '_Enter':     toCursor, '_NumpadEnter': toCursor,
             '^Enter':     toCursor, '^NumpadEnter': toCursor,
+            // Flèche checks the whole document and the goal panel follows the
+            // cursor, so the pre-0.18 "step" is reintroduced as cursor motion:
+            // jump to the next/previous sentence end and show goals there.
+            '_ArrowDown': next, '_KeyN': next,
+            '_ArrowUp':   prev, '_KeyP': prev,
             'F8': toggle,
             'F1': help,
             'Escape': interrupt
@@ -745,15 +812,15 @@ export class CoqManager {
 
         switch (evt.target.name) {
         case 'to-cursor' :
-            console.log('deprecated action');
+            this.setGoalCursor();
             break;
 
         case 'up' :
-            console.log('deprecated action');
+            this.goSentence(-1);
             break;
 
         case 'down' :
-            console.log('deprecated action');
+            this.goSentence(+1);
             break;
 
         case 'interrupt':
