@@ -183,7 +183,12 @@ let jscoq_execute =
     | Ok workspace ->
       cur_workspace := Some workspace;
       out_fn @@ Ready ()
-    | Error _ -> ())
+    (* Upstream discards this error, so a failed workspace init is invisible:
+       no Ready is ever sent, the frontend never enables stepping, and the only
+       symptom is that Alt-N does nothing. Surface it. *)
+    | Error msg ->
+      out_fn @@ Log (Feedback.Error,
+                     Pp.(str "workspace init FAILED: " ++ str msg)))
 
   | NewDoc { uri; version; raw } ->
     let io = lsp_cb in
