@@ -115,7 +115,10 @@ let lsp_cb =
     ; message = (fun ~lvl:_ ~message:_ -> ())
     ; diagnostics = (fun ~uri:_ ~version diags ->
           out_fn (Notification (diags,version)))
-    ; fileProgress = (fun ~uri:_ ~version:_ _progress -> ())
+    ; fileProgress = (fun ~uri:_ ~version progress ->
+          let ranges =
+            List.map (fun { Fleche.Progress.Info.range; _ } -> range) progress in
+          out_fn (FileProgress (ranges, version)))
     ; perfData
     ; serverVersion
     ; serverStatus

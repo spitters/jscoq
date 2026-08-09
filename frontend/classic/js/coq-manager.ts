@@ -386,6 +386,22 @@ export class CoqManager {
         this.coq.newDoc(dp)
     }
 
+    /**
+     * Flèche file progress: `pending` are the ranges still being processed;
+     * everything before the first pending range has been checked. Shade the
+     * checked prefix like pre-0.18 jsCoq did for the executed region.
+     */
+    coqFileProgress(pending : any[], version : number) {
+        if (this.version > version) return;
+        let upto : number;
+        if (pending.length == 0)
+            upto = this.editor.getValue().length;   // fully checked
+        else
+            upto = Math.min(...pending.map(r => r.start.offset));
+        /* @ts-ignore */
+        this.editor.markProgress?.(upto);
+    }
+
     // Coq document diagnostics.
     async coqNotification(diags : Diagnostic[], version : number) {
 

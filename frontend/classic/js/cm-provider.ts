@@ -274,6 +274,22 @@ export class CmCoqProvider {
         return this.editor.getDoc().indexFromPos(this.editor.getCursor());
     }
 
+    setCursorOffset(offset) {
+        var doc = this.editor.getDoc();
+        doc.setCursor(doc.posFromIndex(offset));
+    }
+
+    _progressMark = null;
+
+    /** Shade the checked region: document start up to `offset`. */
+    markProgress(offset) {
+        var doc = this.editor.getDoc();
+        if (this._progressMark) this._progressMark.clear();
+        this._progressMark = offset > 0 ?
+            doc.markText({line: 0, ch: 0}, doc.posFromIndex(offset),
+                         {className: 'coq-eval-ok'}) : null;
+    }
+
     // ---------------------------------
 
     getLength() {

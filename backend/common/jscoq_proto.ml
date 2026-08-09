@@ -223,6 +223,9 @@ type jscoq_answer =
   | CoqInfo   of string
   | Ready     of unit
   | Notification of Lang.Diagnostic.t list * int
+  (* Flèche fileProgress: ranges still being processed (empty = fully checked).
+     Used by the frontend to shade the checked prefix of the document. *)
+  | FileProgress of Lang.Range.t list * int
   | Response  of Answer.t Request.answer
   | Log       of Feedback.level * Pp.t
   | JsonExn   of string

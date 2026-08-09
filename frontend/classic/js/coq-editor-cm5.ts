@@ -67,4 +67,12 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
     getCursorOffset(): number {
         return this.snippets[0].getCursorOffset();
     }
+
+    setCursorOffset(offset: number) {
+        this.snippets[0].setCursorOffset(offset);
+    }
+
+    markProgress(offset: number) {
+        this.snippets[0].markProgress(offset);
+    }
 }
