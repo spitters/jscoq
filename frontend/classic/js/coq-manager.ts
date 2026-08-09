@@ -885,11 +885,18 @@ const PKG_ALIASES = {
     utf8: "Coq.Unicode.Utf8"
 };
 
-const PKG_AFFILIATES = [  // Affiliated packages in @jscoq/@wacoq scope
-    'mathcomp', 'elpi', 'equations', 'extlib', 'simpleio', 'quickchick',
-    'software-foundations',
-    'paco', 'snu-sflib',
-    'fcsl-pcm', 'htt', 'pnp', 'coqoban', 'stdpp', 'iris'
+// Affiliated packages in @jscoq/@wacoq scope.
+//
+// Each name here is probed at node_modules/@jscoq/<pkg>/coq-pkgs/<pkg>.json.
+// Any that is not installed 404s and is retried ~9 times, and because
+// handleMissingDeps() calls disable() before awaiting the loads and only
+// re-enables afterwards, unresolved probes leave navEnabled false forever —
+// the toolbar stays off and every keybinding is silently swallowed.
+//
+// Trimmed to what is actually shipped here. Restore entries as the
+// corresponding packages are added.
+const PKG_AFFILIATES = [
+    'software-foundations'
 ];
 
 // Local Variables:
