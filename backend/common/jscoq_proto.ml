@@ -143,7 +143,7 @@ type init_options =
   (* @todo allow to be set in NewDoc too *)
   ; debug: bool                  [@default false]
   ; lib_path: lib_path           [@default []]
-  ; lib_init: string list        [@default ["Coq.Init.Prelude"]]
+  ; lib_init: string list        [@default ["Corelib.Init.Prelude"]]
   } [@@deriving yojson]
 
 type search_query =

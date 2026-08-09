@@ -788,7 +788,7 @@ function debouncePend<T extends (...args: any) => any>
 
 
 const PKG_ALIASES = {
-    prelude: "Coq.Init.Prelude",
+    prelude: "Corelib.Init.Prelude",
     utf8: "Coq.Unicode.Utf8"
 };
 

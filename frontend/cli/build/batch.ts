@@ -202,7 +202,7 @@ type CompileTaskOptions = {
 
 type LoadPath = [string[], string[]][];
 
-const PRELUDE = ["Coq.Init.Prelude"];
+const PRELUDE = ["Corelib.Init.Prelude"];
 
 
 class AnalyzeTask {

@@ -108,7 +108,13 @@ class HeadlessCoqManager {
             prelude: false,
             top_name: undefined,  /* default: set by worker (JsCoq) */
             implicit_libs: true,
-            all_pkgs: ['init', 'coq-base', 'coq-collections', 'coq-arith', 'coq-reals', 'ltac2'],
+            // Pre-9.0 chunk names ('coq-base', 'coq-collections', 'coq-arith',
+            // 'coq-reals') came from the old four-way stdlib split. Rocq 9.0 moved
+            // the stdlib to its own repo; it is packaged here as one 'stdlib' chunk.
+            // The browser frontend is unaffected — coq-manager.ts reads coq.json
+            // dynamically via packages.expand(), and its copy of this list is
+            // already commented out.
+            all_pkgs: ['init', 'stdlib', 'ltac2'],
             pkg_path: this.findPackageDir(),
             inspect: false,
             log_debug: false,
@@ -144,7 +150,7 @@ class HeadlessCoqManager {
                 implicit_libs: this.options.implicit_libs
             },
             doc_opts = {
-                lib_init: this.options.prelude ? ["Coq.Init.Prelude"] : [],
+                lib_init: this.options.prelude ? ["Corelib.Init.Prelude"] : [],
                 lib_path: this.getLoadPath()
             };
 
