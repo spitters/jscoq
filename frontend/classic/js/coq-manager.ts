@@ -416,10 +416,20 @@ export class CoqManager {
 
         let needRecheck = false, pending;
         for (let d of diags.reverse()) {
-            for (let extra of d.extra ?? []) {
+            // Pre-Flèche protocol put FailedRequire in `d.extra`; current
+            // coq-lsp delivers it as `d.data.failedRequire` (a list of
+            // {prefix, refs} with the same qualid payloads). Support both —
+            // without this, a failed Require never triggers the on-demand
+            // package load and e.g. `From Stdlib Require Import String.`
+            // just stays red.
+            let failedRequires = [
+                ...(d.extra ?? []).filter(e => e[0] === 'FailedRequire')
+                                  .map(e => e[1]),
+                ...((d as any).data?.failedRequire ?? [])
+            ];
+            for (let fr of failedRequires) {
                 /** @todo it seems that these are sent more than once */
-                if (extra[0] === 'FailedRequire' &&
-                        (pending = this.handleRequires(extra))) {
+                if ((pending = this.handleRequires(['FailedRequire', fr]))) {
                     this.editor.markDiagnostic(d);
 
                     needRecheck = true;
