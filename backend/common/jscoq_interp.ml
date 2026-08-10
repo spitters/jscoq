@@ -172,6 +172,8 @@ let try_check ~token =
   | None -> ()
   | Some (_wake_up, _doc) -> ()
 
+let idle ~token = try_check ~token
+
 (** main interpreter *)
 let jscoq_execute =
   let out_fn = post_answer in fun ~token -> function

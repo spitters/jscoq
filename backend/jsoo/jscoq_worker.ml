@@ -226,6 +226,11 @@ let rec filter_queue (cmd, rest) queue =
 let rec process_queue () =
   match !event_queue with
   | [] ->
+    (* Pump Fleche's incremental checker: without this, a document is only
+       checked in increments piggybacked on incoming commands, so a static
+       page's single NewDoc never gets fully checked. *)
+    let token = Coq.Limits.Token.create () in
+    jscoq_protect (fun () -> Jscoq_interp.idle ~token);
     ignore(setTimeout process_queue 0.1)
   | cmd :: rest ->
     Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1);

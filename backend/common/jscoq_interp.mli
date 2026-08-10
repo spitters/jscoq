@@ -34,6 +34,13 @@ module Callbacks : sig
 end
 
 (** Main execution point *)
+(** Advance Fleche's incremental checker one step if a document has pending
+    work. Fleche expects the host loop to pump this until checking completes
+    (the LSP server does it on idle); call it from the worker's timer, or
+    documents never get checked beyond the increments piggybacked on
+    incoming commands. *)
+val idle : token:Coq.Limits.Token.t -> unit
+
 val jscoq_execute
   : token:Coq.Limits.Token.t
   -> Jscoq_proto.Proto.jscoq_cmd
