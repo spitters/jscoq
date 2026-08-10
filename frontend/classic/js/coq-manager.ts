@@ -392,14 +392,19 @@ export class CoqManager {
      * checked prefix like pre-0.18 jsCoq did for the executed region.
      */
     coqFileProgress(pending : any[], version : number) {
+        // Fleche checks the whole document up-front, so the checked region is
+        // almost immediately "everything" — pedagogically useless as a shade.
+        // Instead the shading follows the *stepping frontier* (Alt-Down/Up,
+        // Alt-Enter), like pre-0.18 execution shading did; see markFrontier.
+        // The progress notifications are still received for other uses.
         if (this.version > version) return;
-        let upto : number;
-        if (pending.length == 0)
-            upto = this.editor.getValue().length;   // fully checked
-        else
-            upto = Math.min(...pending.map(r => r.start.offset));
+    }
+
+    /** Pedagogical frontier: shade up to `offset`, as if execution had
+     *  proceeded that far. Driven by deliberate navigation only. */
+    markFrontier(offset : number) {
         /* @ts-ignore */
-        this.editor.markProgress?.(upto);
+        this.editor.markProgress?.(offset);
     }
 
     // Coq document diagnostics.
@@ -696,6 +701,7 @@ export class CoqManager {
      * from the post position, messages from the sentence itself.
      */
     async stepGoals(target: number) {
+        this.markFrontier(target);
         this.layout.waiting_for_goals(target);
         let [post, at] = await Promise.all([
             this.coq.sendRequest(this.uri, target, ['Goals']),
@@ -738,7 +744,10 @@ export class CoqManager {
               help   = () => this.layout.toggleHelp(),
               interrupt = () => this.interruptRequest();
 
-        const toCursor  = () => this.setGoalCursor();
+        const toCursor  = () => {
+            this.setGoalCursor();
+            this.markFrontier(this.editor.getCursorOffset());
+        };
         const next      = () => this.goSentence(+1);
         const prev      = () => this.goSentence(-1);
         const nav_bindings = {
