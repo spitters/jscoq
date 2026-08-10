@@ -64,15 +64,44 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
         in_part.mark(diag);
     }
 
+    /** The snippet that currently owns the cursor. */
+    _focusedSnippet() {
+        return this.snippets.find(sp => sp.editor?.hasFocus?.()) ||
+               this.currentFocus || this.snippets[0];
+    }
+
+    /** Global document offset: the document is snippet texts joined with
+     *  a single newline (see getValue), so each earlier snippet
+     *  contributes length + 1. Upstream returned snippet 0's local offset,
+     *  which makes goals-at-cursor useless on multi-snippet (coqdoc) pages. */
     getCursorOffset(): number {
-        return this.snippets[0].getCursorOffset();
+        let sp = this._focusedSnippet(),
+            off = sp.getCursorOffset();
+        for (let s of this.snippets) {
+            if (s === sp) break;
+            off += s.editor.getValue().length + 1;
+        }
+        return off;
     }
 
     setCursorOffset(offset: number) {
-        this.snippets[0].setCursorOffset(offset);
+        for (let s of this.snippets) {
+            let len = s.editor.getValue().length;
+            if (offset <= len) { s.setCursorOffset(offset); s.focus(); return; }
+            offset -= len + 1;
+        }
+        let last = this.snippets[this.snippets.length - 1];
+        last?.setCursorOffset(last.editor.getValue().length);
     }
 
+    /** Distribute the checked-prefix mark across snippets: the document is
+     *  snippet texts joined with newlines, so shade each snippet up to its
+     *  covered portion (fully, partially, or clear). */
     markProgress(offset: number) {
-        this.snippets[0].markProgress(offset);
+        for (let s of this.snippets) {
+            let len = s.editor.getValue().length;
+            s.markProgress(Math.max(0, Math.min(offset, len)));
+            offset -= len + 1;
+        }
     }
 }
