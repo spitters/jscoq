@@ -109,8 +109,12 @@ export class CoqWorkerConfig {
      * from which this script is loaded.
      */
     static determineWorkerPath(basePath: string | URL, backend: backend): URL {
-        return new URL({'js': "backend/jsoo/jscoq_worker.bc.js",
-                        'wa': "dist/wacoq_worker.js"
+        // Version-stamp the worker URL: browsers heuristically cache the
+        // multi-MB worker without revalidation, so a rebuilt worker is
+        // otherwise invisible until a hard reload. Bump on worker rebuilds.
+        const WORKER_VERSION = 'final1';
+        return new URL({'js': "backend/jsoo/jscoq_worker.bc.js?v=" + WORKER_VERSION,
+                        'wa': "dist/wacoq_worker.js?v=" + WORKER_VERSION
                        }[backend], basePath);
     }
 
