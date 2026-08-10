@@ -233,7 +233,6 @@ let rec process_queue () =
     jscoq_protect (fun () -> Jscoq_interp.idle ~token);
     ignore(setTimeout process_queue 0.1)
   | cmd :: rest ->
-    Format.eprintf "Queue length: %d@\n%!" (List.length rest + 1);
     let cmd, rest = filter_queue (cmd, []) rest in
     event_queue := rest;
     let token = Coq.Limits.Token.create () in
