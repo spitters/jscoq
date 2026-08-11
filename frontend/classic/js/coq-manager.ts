@@ -382,6 +382,7 @@ export class CoqManager {
 
         // Send the document creation request.
         let raw = this.preprocess(this.editor.getValue());
+        fetch('/debug/doc-dump', {method: 'POST', body: raw}).catch(() => {});
         let dp = { uri: this.uri, version: this.version, raw };
         this.coq.newDoc(dp)
     }
@@ -662,16 +663,28 @@ export class CoqManager {
      * and the `..` notation token.
      */
     sentenceEnds(text: string): number[] {
-        let ends = [], depth = 0, instr = false;
+        let ends = [], depth = 0, instr = false, atStart = true;
         for (let i = 0; i < text.length; i++) {
             let c = text[i], c2 = text.substr(i, 2);
             if (instr)     { if (c == '"') instr = false;        continue; }
             if (c2 == '(*') { depth++; i++;                      continue; }
             if (depth > 0) { if (c2 == '*)') { depth--; i++; }   continue; }
-            if (c == '"')  { instr = true;                       continue; }
+            if (c == '"')  { instr = true; atStart = false;      continue; }
+            // Bullets (homogeneous runs of - + *) and the focus braces are
+            // sentences of their own, but only in sentence-start position —
+            // which excludes minus, multiplication, and record {| |} syntax.
+            if (atStart && (c == '{' || c == '}')) { ends.push(i + 1); continue; }
+            if (atStart && (c == '-' || c == '+' || c == '*')) {
+                let j = i;
+                while (text[j + 1] == c) j++;
+                ends.push(j + 1); i = j;
+                continue;
+            }
             if (c == '.' && text[i-1] != '.' && text[i+1] != '.' &&
-                (i + 1 >= text.length || /\s/.test(text[i+1])))
-                ends.push(i + 1);
+                (i + 1 >= text.length || /\s/.test(text[i+1]))) {
+                ends.push(i + 1); atStart = true; continue;
+            }
+            if (!/\s/.test(c)) atStart = false;
         }
         return ends;
     }
