@@ -161,14 +161,20 @@ let load_plugin pg =
       else [last]
     | None -> [pkg]
   in
-  let base =
-    match List.find_opt (fun b -> Jslibmng.cma_available (b ^ "_plugin"))
-            candidates with
-    | Some b -> b
-    | None -> List.hd candidates
-  in
-  Format.eprintf "load_plugin: %s -> %s_plugin.cma@\n%!" pkg base;
-  Jslibmng.coq_cma_link ~file_path:(base ^ "_plugin")
+  match
+    List.find_opt (fun b -> Jslibmng.cma_available (b ^ "_plugin")) candidates
+  with
+  | Some base ->
+    Format.eprintf "load_plugin: %s -> %s_plugin.cma@\n%!" pkg base;
+    Jslibmng.coq_cma_link ~file_path:(base ^ "_plugin")
+  | None ->
+    (* A .vo may declare plugins we do not ship (e.g. rocq-elpi, pulled
+       in by mathcomp's hierarchy-builder): loading the .vo is fine as
+       long as the plugin's own vernacs are never executed, so skip
+       with a warning instead of failing the Require. *)
+    Format.eprintf
+      "load_plugin: %s not packaged — skipping (its commands will not work)@\n%!"
+      pkg
 
 (* This is already taken care by the LSP layer *)
 let jscoq_protect f =
