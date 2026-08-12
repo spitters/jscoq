@@ -33,6 +33,11 @@ let file_cache : (string, cache_entry) Hashtbl.t = Hashtbl.create 503
 (* The cma resolver cache maps a cma module to its actual path. *)
 let cma_cache : (string, string) Hashtbl.t = Hashtbl.create 103
 
+(* Whether a bytecode archive with this basename (sans extension) has been
+   registered by a loaded package. Lets the worker probe candidate archive
+   names when resolving a findlib plugin name. *)
+let cma_available file = Hashtbl.mem cma_cache (file ^ ".cma")
+
 type out_fn = lib_event -> unit
 
 exception DynLinkFailed of string

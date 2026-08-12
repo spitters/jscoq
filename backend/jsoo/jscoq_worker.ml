@@ -137,10 +137,35 @@ let load_module = fun cma ->
    Verified against all 22 plugins in the init/stdlib/ltac2 packages. *)
 let load_plugin pg =
   let pkg = Mltop.PluginSpec.to_package pg in
-  let base =
+  let sub_from s i = String.sub s (i + 1) (String.length s - i - 1) in
+  let strip_dashes s = String.concat "" (String.split_on_char '-' s) in
+  (* Third-party whole-package plugins are named "<opam-pkg>.plugin"
+     (e.g. "coq-quickchick.plugin"), and their archive derives from the
+     opam package basename, not from the last findlib component — probe
+     the plausible spellings against what packages actually shipped. *)
+  let candidates =
     match String.rindex_opt pkg '.' with
-    | Some i -> String.sub pkg (i + 1) (String.length pkg - i - 1)
-    | None -> pkg
+    | Some i ->
+      let before = String.sub pkg 0 i and last = sub_from pkg i in
+      if last = "plugin" then
+        let base = match String.rindex_opt before '.' with
+          | Some j -> sub_from before j
+          | None -> before
+        in
+        let no_dash = strip_dashes base in
+        let no_prefix = match String.split_on_char '-' base with
+          | ("coq" | "rocq") :: (_ :: _ as rest) -> String.concat "" rest
+          | _ -> no_dash
+        in
+        [no_prefix; no_dash; last]
+      else [last]
+    | None -> [pkg]
+  in
+  let base =
+    match List.find_opt (fun b -> Jslibmng.cma_available (b ^ "_plugin"))
+            candidates with
+    | Some b -> b
+    | None -> List.hd candidates
   in
   Format.eprintf "load_plugin: %s -> %s_plugin.cma@\n%!" pkg base;
   Jslibmng.coq_cma_link ~file_path:(base ^ "_plugin")

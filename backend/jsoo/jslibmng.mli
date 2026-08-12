@@ -28,5 +28,9 @@ val coq_vo_req  : string -> string option
 
 val register_cma : file_path:string -> unit
 
+(** [cma_available base] tells whether [base ^ ".cma"] was registered by a
+    loaded package (used to probe candidate plugin archive names) *)
+val cma_available : string -> bool
+
 (** [coq_cma_link cma] dynlinks the bytecode plugin [cma] *)
 val coq_cma_link : file_path:string -> unit
