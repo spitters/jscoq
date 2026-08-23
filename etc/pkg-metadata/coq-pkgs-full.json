@@ -1,0 +1,72 @@
+{
+    "builddir": "coq-pkgs",
+    "bundle": "coq",
+    "projects": {
+        "init": {
+            "coq/theories": {
+                "prefix": "Corelib"
+            },
+            "rocq-runtime/plugins": {
+                "prefix": "plugins",
+                "dirpaths": [
+                    "ltac",
+                    "number_string_notation",
+                    "tauto",
+                    "btauto",
+                    "cc",
+                    "cc_core",
+                    "firstorder",
+                    "firstorder_core",
+                    "ssreflect",
+                    "ssrmatching"
+                ]
+            }
+        },
+        "stdlib": {
+            "coq/user-contrib/Stdlib": {
+                "prefix": "Stdlib"
+            },
+            "rocq-runtime/plugins": {
+                "prefix": "plugins",
+                "dirpaths": [
+                    "micromega",
+                    "micromega_core",
+                    "zify",
+                    "ring",
+                    "nsatz",
+                    "nsatz_core",
+                    "funind",
+                    "derive",
+                    "extraction",
+                    "rtauto"
+                ]
+            }
+        },
+        "ltac2": {
+            "coq/user-contrib/Ltac2": {
+                "prefix": "Ltac2"
+            },
+            "rocq-runtime/plugins": {
+                "prefix": "plugins",
+                "dirpaths": [
+                    "ltac2",
+                    "ltac2_ltac1"
+                ]
+            }
+        },
+        "quickchick": {
+            "coq/user-contrib/QuickChick": {
+                "prefix": "QuickChick"
+            },
+            "coq/user-contrib/ExtLib": {
+                "prefix": "ExtLib"
+            },
+            "coq/user-contrib/mathcomp": {
+                "prefix": "mathcomp"
+            },
+            "coq-quickchick/plugin": {
+                "prefix": "quickchick_plugin_dir"
+            }
+        }
+    }
+}
