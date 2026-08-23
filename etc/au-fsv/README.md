@@ -2,7 +2,7 @@
 
 This branch (`rocq9-fixes`) is the jsCoq tree that runs Rocq 9.0.0 in the
 browser for the Aarhus University course *Formal Software Verification*
-(https://aufunctionalprogramming.github.io/fsv26/). It is published to satisfy
+(https://spitters.github.io/fsv26/). It is published to satisfy
 the AGPL source offer for the served build and as a staging ground for
 upstream pull requests; `jscoq-upstream-notes.md` lists the changes and
 their status.
