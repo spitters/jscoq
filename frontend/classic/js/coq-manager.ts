@@ -148,12 +148,30 @@ export class CoqManager {
         if (!CoqEditor)
             throw new Error(`invalid frontend specification: '${this.options.frontend}'`);
 
-        /* Document processing */
-        let onChange = debouncePend((raw: string) => {
+        /* Document processing. Edits are synced to the checker only when
+         * the cursor rests at a sentence stop (`.`, focus brace, bullet);
+         * mid-sentence the whole suffix would just parse-fail and paint
+         * the document red. Held text is flushed by explicit navigation
+         * (Alt-Down/Up/Enter) or the next stop. */
+        let sendDoc = (raw: string) => {
             this.version++;
             let cooked = this.preprocess(raw);
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
+        };
+        let onChange = debouncePend((raw: string) => {
+            if (this.atSentenceStop()) {
+                this._heldRaw = undefined;
+                sendDoc(raw);
+            } else
+                this._heldRaw = raw;
         }, 200);
+        this.flushEdits = () => {
+            if (this._heldRaw !== undefined) {
+                let raw = this._heldRaw;
+                this._heldRaw = undefined;
+                sendDoc(raw);
+            }
+        };
 
         let onCursorUpdated = _.throttle(offset => {
             console.log('cursor updated: ' + offset);
@@ -382,7 +400,6 @@ export class CoqManager {
 
         // Send the document creation request.
         let raw = this.preprocess(this.editor.getValue());
-        fetch('/debug/doc-dump', {method: 'POST', body: raw}).catch(() => {});
         let dp = { uri: this.uri, version: this.version, raw };
         this.coq.newDoc(dp)
     }
@@ -691,7 +708,16 @@ export class CoqManager {
 
     /** Move the cursor to the next (dir=+1) or previous (dir=-1) sentence end
      *  and display the goals there. */
+    /** Whether the cursor sits just after a sentence stop (or blank
+     *  line-start bullets), so the document is worth rechecking. */
+    atSentenceStop() {
+        let before = this.editor.getValue().slice(0, this.editor.getCursorOffset());
+        return /(\.|\{|\})\s*$|(^|\n)\s*[-+*]+\s*$|^\s*$/.test(before);
+    }
+
     goSentence(dir: number) {
+        /* @ts-ignore */
+        this.flushEdits?.();
         let text = this.editor.getValue(),
             here = this.editor.getCursorOffset(),
             ends = this.sentenceEnds(text);
@@ -758,6 +784,8 @@ export class CoqManager {
               interrupt = () => this.interruptRequest();
 
         const toCursor  = () => {
+            /* @ts-ignore */
+            this.flushEdits?.();
             this.setGoalCursor();
             this.markFrontier(this.editor.getCursorOffset());
         };
