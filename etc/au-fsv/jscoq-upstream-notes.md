@@ -76,13 +76,13 @@ and a missing Corelib module surfaces confusingly as "Error when parsing
 
 ## Deployment-side artifacts (ours, not upstream)
 
-- `jscoq-agent-sf.js` — `jscoq-agent.js` adapted to import the built bundle
-  (`./jscoq.js`), with readiness-proof boot (a module can finish loading after
-  `DOMContentLoaded`; the stock listener then never fires) and the
-  `software-foundations` bundle enabled.
-- `build-stdlib-direct.sh`, `build-lf.sh`, `finish-highlight.sh`,
-  `build-terse-jscoq.sh` (session scratchpad) — the stdlib/LF/deck build
-  chain; §9–10 of `Lecture-planning.md` documents the whole thing.
+- `jscoq-agent-sf2.js` (repo root) — the page agent that injects jsCoq into
+  the SF book pages and terse decks, with readiness-proof boot (a module can
+  finish loading after `DOMContentLoaded`; the stock listener then never
+  fires) and the `software-foundations` bundle enabled.
+- `rebuild-jscoq.sh`, `reinstall-jscoq-libs.sh`, `build-lib-jscoq.py` (this
+  directory) — the build chain: worker, then stdlib/libs, then packages and
+  frontend; paths are those of the build machine (see `README.md`).
 
 ## Full-SF status (2026-08-12, for FSV25)
 
