@@ -22,7 +22,7 @@
  *    steals focus), and no CM refresh afterwards (it would scroll the cursor
  *    back into view, undoing the snap)
  */
-import { JsCoq, Deprettify } from './dist/frontend/index.js?v=final4';
+import { JsCoq, Deprettify } from './dist/frontend/index.js?v=sfrepl2';
 
 function jsCoqInject() {
     var b = document.body;
@@ -36,8 +36,14 @@ function jsCoqInject() {
     b.append(plug);
 }
 
+// Panel visibility: shown unless ?jscoq=off or the user hid it last time.
+// localStorage is read defensively: some private/strict-privacy modes throw
+// on access, and an uncaught throw here would abort the whole module.
+function storedShow() {
+    try { return localStorage.jsCoqShow; } catch (e) { return undefined; }
+}
 var jsCoqShow = location.search === '?jscoq=on' ||
-                location.search !== '?jscoq=off' && localStorage.jsCoqShow === 'true';
+                location.search !== '?jscoq=off' && storedShow() !== 'false';
 
 // QC pages preload the pure-QuickChick stack instead of lf/plf: .vo-load
 // Requires bypass the FailedRequire auto-load path (and that round-trip
@@ -77,10 +83,7 @@ async function jsCoqLoad() {
     page.setAttribute('tabindex', '-1');
     page.focus();
 
-    Deprettify.REPLACES.push(   // LF,PLF define their own versions (for Imp)
-        [/∨/g, '\\/'], [/∧/g, '/\\'], [/↔/g, '<->'], [/≤/g, '<='], [/≠/g, '<>'],
-        [/∈/g, '\\in'],
-        [/∀/g, 'forall'], [/≥/g, '>=']);
+    Deprettify.REPLACES.push(...Deprettify.SF_REPLACES);
 
     var coq = await JsCoq.start(jscoq_ids, jscoq_opts);
     //@ts-ignore
@@ -117,7 +120,9 @@ async function jsCoqLoad() {
         coq.goSentence = (dir) => { _go(dir); setTimeout(alignSlideToCursor, 140); };
     }
 
-    window.addEventListener('beforeunload', () => { localStorage.jsCoqShow = coq.layout.isVisible(); })
+    window.addEventListener('beforeunload', () => {
+        try { localStorage.jsCoqShow = coq.layout.isVisible(); } catch (e) {}
+    });
 }
 
 function jsCoqStart() {
