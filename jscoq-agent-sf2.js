@@ -126,16 +126,13 @@ async function jsCoqLoad() {
         });
         return last;
     }
-    // The slide on screen: the hash target in slide mode, otherwise the
-    // last marker above the viewport top.
+    // The slide on screen: the last marker at or above the top of the
+    // scrolling container (div#page; slides.js scrolls it via the hash).
     function currentSlide() {
-        var any = document.querySelectorAll('.slide')[1];
-        var inSlideMode = any && any.style.marginTop && any.style.marginTop !== '0px';
-        if (inSlideMode && /^#slide-\d+$/.test(location.hash))
-            return document.getElementById(location.hash.slice(1));
-        var top = window.scrollY + 1, last = null;
+        var box = document.getElementById('page') || document.scrollingElement;
+        var top = box.getBoundingClientRect().top + 2, last = null;
         document.querySelectorAll('.slide').forEach(function (m) {
-            if (m.getBoundingClientRect().top + window.scrollY <= top) last = m;
+            if (m.getBoundingClientRect().top <= top) last = m;
         });
         return last;
     }
