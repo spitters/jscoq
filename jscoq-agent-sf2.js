@@ -147,7 +147,8 @@ async function jsCoqLoad() {
         if (focused && slideOf(focused.editor.getWrapperElement()) === cur) return;
         var off = 0;
         for (var sp of snippets) {
-            if (slideOf(sp.editor.getWrapperElement()) === cur) {
+            // Hidden panes (collapsed proofs) cannot take focus; skip them.
+            if (slideOf(sp.editor.getWrapperElement()) === cur && !sp.isHidden()) {
                 ed.setCursorOffset(off);
                 return;
             }
