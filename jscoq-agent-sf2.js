@@ -15,6 +15,8 @@
  *    mapping the lexer dies with "Undefined token")
  *  - readiness-proof boot (a module can finish loading after
  *    DOMContentLoaded already fired)
+ *  - Alt-Down on a slide starts stepping at that slide's first pane when
+ *    the cursor is not already in one of its panes;
  *  - CodeMirror refresh on slide navigation (editors created while their
  *    slide is hidden render zero-height until refreshed)
  *  - slide realignment after sentence-stepping (Alt-↓/↑): scrollIntoView on
@@ -115,9 +117,53 @@ async function jsCoqLoad() {
             history.replaceState(null, '', '#' + last.id);
         last.scrollIntoView({ block: 'start' });
     }
+    // Slide marker (div.slide from slides.js) that owns an element.
+    function slideOf(el) {
+        var last = null;
+        document.querySelectorAll('.slide').forEach(function (m) {
+            if (m.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)
+                last = m;
+        });
+        return last;
+    }
+    // The slide on screen: the hash target in slide mode, otherwise the
+    // last marker above the viewport top.
+    function currentSlide() {
+        var any = document.querySelectorAll('.slide')[1];
+        var inSlideMode = any && any.style.marginTop && any.style.marginTop !== '0px';
+        if (inSlideMode && /^#slide-\d+$/.test(location.hash))
+            return document.getElementById(location.hash.slice(1));
+        var top = window.scrollY + 1, last = null;
+        document.querySelectorAll('.slide').forEach(function (m) {
+            if (m.getBoundingClientRect().top + window.scrollY <= top) last = m;
+        });
+        return last;
+    }
+    // Alt-Down on a slide whose panes do not hold the cursor: start
+    // stepping at that slide's first pane instead of wherever the cursor was.
+    function enterSlideProof() {
+        var ed = coq.editor, snippets = ed && ed.snippets;
+        if (!snippets || !snippets.length) return;
+        var cur = currentSlide();
+        if (!cur) return;
+        var focused = snippets.find(sp => sp.editor.hasFocus());
+        if (focused && slideOf(focused.editor.getWrapperElement()) === cur) return;
+        var off = 0;
+        for (var sp of snippets) {
+            if (slideOf(sp.editor.getWrapperElement()) === cur) {
+                ed.setCursorOffset(off);
+                return;
+            }
+            off += sp.editor.getValue().length + 1;
+        }
+    }
     if (coq.goSentence) {
         var _go = coq.goSentence.bind(coq);
-        coq.goSentence = (dir) => { _go(dir); setTimeout(alignSlideToCursor, 140); };
+        coq.goSentence = (dir) => {
+            if (dir > 0) enterSlideProof();
+            _go(dir);
+            setTimeout(alignSlideToCursor, 140);
+        };
     }
 
     window.addEventListener('beforeunload', () => {
