@@ -9,6 +9,10 @@
  *)
 
 (* open Js_of_ocaml *)
+(* The proto open below shadows [Lang] with its serialization wrapper;
+   keep the real library module reachable. *)
+module Real_lang = Lang
+
 open Jscoq_proto.Proto
 
 open Jslib
@@ -134,6 +138,12 @@ let exec_init (set_opts : init_options) =
 
   Fleche.Io.CallBack.set lsp_cb;
 
+  (* Lazy checking: only elaborate up to the position of a pending request
+     (PosInDoc below), never to end-of-file. On slide pages the document is
+     a whole chapter; eager checking made every edit re-elaborate the rest
+     of the chapter. *)
+  Fleche.Config.v := { !Fleche.Config.v with check_only_on_request = true };
+
   (* jsCoq-specific flags *)
   Global.set_VM false;
   Global.set_native_compiler false;
@@ -166,11 +176,37 @@ let init_workspace ~token ~dir opts =
 (** XXX Error better when the workspace was not initialized *)
 let get_ws () = Option.get !cur_workspace
 
+(* Last raw text per document, to translate the frontend's flat offsets
+   into the (line, col) points Fleche targets. Columns are counted in
+   bytes; on a line with non-ASCII characters this may overshoot the
+   target by a fraction of a sentence, which is harmless. *)
+let doc_raws : (string, string) Hashtbl.t = Hashtbl.create 7
+
+let point_of_offset raw off =
+  let off = max 0 (min off (String.length raw)) in
+  let line = ref 0 and bol = ref 0 in
+  String.iteri (fun i c -> if i < off && c = '\n' then (incr line; bol := i + 1)) raw;
+  (!line, off - !bol)
+
+(* Requests postponed by Fleche until their target position is checked. *)
+let postponed_reqs : (int, Method.t Request.t) Hashtbl.t = Hashtbl.create 7
+
+let serve_postponed ~token ~doc ids =
+  Int.Set.iter (fun id ->
+      match Hashtbl.find_opt postponed_reqs id with
+      | None -> ()
+      | Some method_ ->
+        Hashtbl.remove postponed_reqs id;
+        let f = Request_interp.do_request ~token ~doc in
+        let res = Request.process ~f method_ in
+        post_answer (Response res))
+    ids
+
 let try_check ~token =
   let io = lsp_cb in
   match Fleche.Theory.Check.maybe_check ~token ~io with
   | None -> ()
-  | Some (_wake_up, _doc) -> ()
+  | Some (wake_up, doc) -> serve_postponed ~token ~doc wake_up
 
 let idle ~token = try_check ~token
 
@@ -198,28 +234,36 @@ let jscoq_execute =
     let init = !root_state in
     let files = Coq.Files.make () in
     let env = Fleche.Doc.Env.make ~init ~workspace ~files in
+    Hashtbl.replace doc_raws (Real_lang.LUri.File.to_string_uri uri) raw;
     Fleche.Theory.open_ ~io ~token ~env ~uri ~version ~raw;
     try_check ~token;
     ()
 
   | Update { uri; version; raw } ->
     let io = lsp_cb in
-    let _stale_request : Int.Set.t = Fleche.Theory.change ~io ~token ~uri ~version ~raw in
+    Hashtbl.replace doc_raws (Real_lang.LUri.File.to_string_uri uri) raw;
+    let stale : Int.Set.t = Fleche.Theory.change ~io ~token ~uri ~version ~raw in
+    Int.Set.iter (Hashtbl.remove postponed_reqs) stale;
     try_check ~token;
     ()
 
   | Request { uri; method_ } ->
-    let { Request.id; loc = _; v = _ } = method_ in
-    (* XXX Fix to use position *)
+    let { Request.id; loc; v = _ } = method_ in
     let postpone = true in
-    let r = Fleche.Theory.Request.{ id; uri; postpone; request = FullDoc } in
-    (* XXX Fix to postpone requests *)
+    let request =
+      match Hashtbl.find_opt doc_raws (Real_lang.LUri.File.to_string_uri uri) with
+      | Some raw ->
+        Fleche.Theory.Request.PosInDoc
+          { point = point_of_offset raw loc; version = None }
+      | None -> Fleche.Theory.Request.FullDoc
+    in
+    let r = Fleche.Theory.Request.{ id; uri; postpone; request } in
     let () = match Fleche.Theory.Request.add r with
       | Now doc ->
         let f = Request_interp.do_request ~token ~doc in
         let res = Request.process ~f method_ in
         out_fn (Response res)
-      | Postpone -> ()
+      | Postpone -> Hashtbl.replace postponed_reqs id method_
       | Cancel -> () in
     try_check ~token
 
