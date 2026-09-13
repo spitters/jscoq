@@ -21,9 +21,17 @@ export class CoqCodeMirror5 extends ProviderContainer implements ICoqEditor {
 
         super(eIds, options, manager);
 
-        this.onChangeAny = () => {
-            let txt = this.getValue();
-            onChange(txt);
+        /* Passes the global offset where the change starts, if known. */
+        this.onChangeAny = (cm, evt) => {
+            let txt = this.getValue(), from = undefined, off = 0;
+            for (let s of this.snippets) {
+                if (s.editor === cm) {
+                    if (evt?.from) from = off + cm.indexFromPos(evt.from);
+                    break;
+                }
+                off += s.editor.getValue().length + 1;
+            }
+            onChange(txt, from);
         };
         this.onCursorUpdate = (cm) => {
             onCursorUpdate(this.getCursorOffset());

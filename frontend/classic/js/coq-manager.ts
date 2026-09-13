@@ -158,25 +158,50 @@ export class CoqManager {
             let cooked = this.preprocess(raw);
             this.coq.update({ uri: this.uri, version: this.version, raw: cooked });
         };
-        let onChange = debouncePend((raw: string) => {
+        let syncChange = debouncePend((raw: string) => {
             if (this.atSentenceStop()) {
                 this._heldRaw = undefined;
                 sendDoc(raw);
             } else
                 this._heldRaw = raw;
         }, 200);
+        /* Flush sends the editor's current text, including keystrokes still
+         * inside the debounce window. */
         this.flushEdits = () => {
-            if (this._heldRaw !== undefined) {
-                let raw = this._heldRaw;
+            if (syncChange.pending || this._heldRaw !== undefined) {
+                syncChange.cancel();
                 this._heldRaw = undefined;
-                sendDoc(raw);
+                sendDoc(this.editor.getValue());
             }
         };
 
-        let onCursorUpdated = _.throttle(offset => {
-            console.log('cursor updated: ' + offset);
-            if (!onChange.pending) this.setGoalCursor(offset);
+        /* Stepping origin. `_editFrom` is the earliest offset edited since
+         * the cursor last moved for a reason other than an edit; Alt-Down
+         * steps from there, so a sentence just typed before the cursor is
+         * stepped rather than skipped. An edit moves the cursor within the
+         * same CodeMirror operation, which `editing` detects. */
+        let editing = false;
+        let onChange = (raw: string, from?: number) => {
+            if (from !== undefined)
+                this._editFrom = Math.min(this._editFrom ?? from, from);
+            editing = true;
+            queueMicrotask(() => { editing = false; });
+            syncChange(raw);
+        };
+
+        /* Goals follow the cursor only at sentence stops; inside a sentence
+         * the panel keeps the last goals. Held edits are flushed first so
+         * the request offset refers to the text the checker has. */
+        let followCursor = _.throttle(offset => {
+            if (syncChange.pending || !this.atSentenceStop(offset)) return;
+            /* @ts-ignore */
+            this.flushEdits?.();
+            this.setGoalCursor(offset);
         }, 200);
+        let onCursorUpdated = (offset: number) => {
+            if (!editing) this._editFrom = undefined;
+            followCursor(offset);
+        };
 
         this.editor = new CoqEditor(elems, this.options, onChange, onCursorUpdated, this);
 
@@ -470,7 +495,8 @@ export class CoqManager {
         if (needRecheck) this.refreshWorkspace();
 
         /* Refresh goals at cursor */
-        this.setGoalCursor(this.editor.getCursorOffset());
+        if (this.atSentenceStop())
+            this.setGoalCursor(this.editor.getCursorOffset());
     }
 
     coqLog(level, msg) {
@@ -706,22 +732,31 @@ export class CoqManager {
         return ends;
     }
 
-    /** Move the cursor to the next (dir=+1) or previous (dir=-1) sentence end
-     *  and display the goals there. */
-    /** Whether the cursor sits just after a sentence stop (or blank
-     *  line-start bullets), so the document is worth rechecking. */
-    atSentenceStop() {
-        let before = this.editor.getValue().slice(0, this.editor.getCursorOffset());
-        return /(\.|\{|\})\s*$|(^|\n)\s*[-+*]+\s*$|^\s*$/.test(before);
+    /** Whether only whitespace separates the cursor from the preceding
+     *  sentence end (`.`, focus brace, bullet) or the start of the text.
+     *  Elsewhere the cursor is inside a sentence that may be half typed,
+     *  so neither syncing nor goal display is meaningful. The character
+     *  after the cursor is included so that `Nat.|add` is not a stop. */
+    atSentenceStop(offset: number = this.editor.getCursorOffset()) {
+        let text = this.editor.getValue(),
+            ends = this.sentenceEnds(text.slice(0, offset + 1)),
+            last = [...ends].reverse().find(e => e <= offset) ?? 0;
+        return /^\s*$/.test(text.slice(last, offset));
     }
 
+    /** Move the cursor to the next (dir=+1) or previous (dir=-1) sentence end
+     *  and display the goals there. */
     goSentence(dir: number) {
         /* @ts-ignore */
         this.flushEdits?.();
         let text = this.editor.getValue(),
             here = this.editor.getCursorOffset(),
             ends = this.sentenceEnds(text);
-        let target = dir > 0 ? ends.find(o => o > here)
+        /* @ts-ignore */
+        let from = Math.min(here, this._editFrom ?? here);
+        /* @ts-ignore */
+        this._editFrom = undefined;
+        let target = dir > 0 ? ends.find(o => o > from)
                              : [...ends].reverse().find(o => o < here - 1);
         if (target === undefined && dir < 0) target = 0;
         if (target !== undefined) {
@@ -919,12 +954,13 @@ export class CoqManager {
  * whether the call is currently pending.
  */
 function debouncePend<T extends (...args: any) => any>
-            (func: T, wait?: number, options?: _.DebounceSettings): T & {pending: boolean} {
+            (func: T, wait?: number, options?: _.DebounceSettings): T & {pending: boolean, cancel: () => void} {
     let d = _.debounce((...args) => { try { return func(...args); }
                                             finally { wrap.pending = false; } },
                        wait, options),
     wrap = ((...args: any) => { wrap.pending = true;
-                                return d(...args); }) as T & {pending: boolean};
+                                return d(...args); }) as T & {pending: boolean, cancel: () => void};
+    wrap.cancel = () => { d.cancel(); wrap.pending = false; };
 
     return wrap;
 }
