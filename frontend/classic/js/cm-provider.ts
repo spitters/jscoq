@@ -392,12 +392,14 @@ export class CmCoqProvider {
     }
 
     /**
-     * Removes all sentence marks
+     * Removes all sentence marks. The stepping frontier is kept: diagnostics
+     * are refreshed with this call after every check, including the check a
+     * step triggers, which would otherwise erase the shade it just drew.
      */
     retract() {
         for (let mark of this.editor.getAllMarks()) {
             // XXX: Avoid to clear company-coq marks
-            mark.clear();
+            if (mark !== this._progressMark) mark.clear();
         }
     }
 
