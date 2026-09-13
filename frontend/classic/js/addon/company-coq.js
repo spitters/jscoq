@@ -375,11 +375,17 @@ class AutoComplete {
               match = token.string.trim(),
               is_head = token.state.is_head || token.state.begin_sentence;
 
+        // The worker parses the word as a qualified name (Libnames), which
+        // raises on `.`, `Nat.` and other non-identifiers; do not send those.
+        if (!/^[\p{L}_][\p{L}\p{N}_']*(\.[\p{L}_][\p{L}\p{N}_']*)*$/u.test(match))
+            return { list: [], from: token_start, to: token_end };
+
         const point = cm.getDoc().indexFromPos(cur);
         const res = await this.manager.coq.sendRequest(this.manager.uri, point, ["Completion", match]);
 
         const matches = res[1];
-        const matching = matches.map((id) => ({ text: id, label: id, kind: "Lemma", prefix: "" }));
+        // `prefix` is a module path (array); _modulePref joins it.
+        const matching = matches.map((id) => ({ text: id, label: id, kind: "Lemma", prefix: [] }));
         const data = { list: matching, from: token_start, to: token_end };
         return data;
     }
